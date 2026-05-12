@@ -1,5 +1,5 @@
 /**
- * Example: Library profile — reusable named trees (prefabs).
+ * Example: Library level — reusable named trees (prefabs).
  *
  * A library document adds a top-level `prefabs` map. A node whose `type`
  * matches a prefab name instantiates that prefab in a fresh identity scope
@@ -16,7 +16,7 @@ import type { LibraryDocument } from "pxd";
 const doc: LibraryDocument = {
     format: "pxd",
     version: 1,
-    profile: "library",
+    level: "library",
     prefabs: {
         "Button.primary": {
             id: "root",

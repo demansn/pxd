@@ -1,7 +1,7 @@
 /**
  * Vendored subset of the PXD v1 TypeScript schema.
  *
- * Normative: `doc/pxd-v1.md` (Core + Library profiles only).
+ * Normative: `doc/pxd-v1.md` (Core + Library levels only).
  * Canonical: `tools/figma/src/schema/pxd-v1.schema.ts`.
  *
  * Scene types are NOT vendored — this library supports Core + Library only.
@@ -12,21 +12,21 @@ export type PxdDocument = CoreDocument | LibraryDocument;
 export interface DocumentEnvelope {
     format: "pxd";
     version: 1;
-    profile?: "core" | "library";
+    level?: "core" | "library";
     extensionsUsed?: string[];
     extensionsRequired?: string[];
     extensions?: Record<string, unknown>;
 }
 
 export interface CoreDocument extends DocumentEnvelope {
-    profile?: "core";
+    level?: "core";
     root: Node;
     prefabs?: never;
     scenes?: never;
 }
 
 export interface LibraryDocument extends DocumentEnvelope {
-    profile?: "library";
+    level?: "library";
     root: Node;
     prefabs: Record<string, Node>;
     scenes?: never;

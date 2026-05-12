@@ -17,14 +17,14 @@ doc/fixtures/
 | File | Tests | Spec section |
 |---|---|---|
 | `valid/core-minimal.json` | Smallest loadable Core document | §2, §3, §4.1, §4.3 |
-| `valid/core-full.json` | Every Core intrinsic type (`container`, `sprite`, `text`, `graphics`, `slot`); `profile: "core"` | §4 |
+| `valid/core-full.json` | Every Core intrinsic type (`container`, `sprite`, `text`, `graphics`, `slot`); `level: "core"` | §4 |
 | `valid/core-mask-shared.json` | One mask referenced by multiple targets | §8 |
 | `valid/core-extensions.json` | Extension declared in `extensionsUsed` but not `extensionsRequired`; document MUST load even if the reader does not recognize the extension | §9 |
 | `valid/core-bindings.json` | String bindings (`{locale.title}`, multi-binding, escape `\{`) in `text`, `style`, `texture` fields | §7.2 |
 | `valid/core-decisions.json` | Decision-map values (`{_:100, mobile:50}`, multi-tag `de+mobile`) on `x`, `maxWidth`, `texture`, `width`, `fill` | §3.6 |
-| `valid/library-simple.json` | `prefabs` map, prefab instantiated twice, `profile: "library"` | §12, §13 |
+| `valid/library-simple.json` | `prefabs` map, prefab instantiated twice, `level: "library"` | §12, §13 |
 | `valid/library-nested.json` | Prefab body references another prefab (transitive composition) | §13, §14 |
-| `valid/scene-modes.json` | Two scene modes, cross-mode identity by stable `id`, `profile: "scene"` | §17, §18, §19 |
+| `valid/scene-modes.json` | Two scene modes, cross-mode identity by stable `id`, `level: "scene"` | §17, §18, §19 |
 | `valid/scene-runtime-type.json` | Runtime-registered type (`Button`) with `props`; no prefabs | §5 |
 
 ## Invalid fixtures
@@ -47,7 +47,7 @@ doc/fixtures/
 | `invalid/prefab-ref-with-children.json` | A prefab reference carries `children` | §15 rule 23 |
 | `invalid/mixed-root-and-scenes.json` | Document has both `root` and `scenes` | §20 rule 28 |
 | `invalid/empty-modes.json` | Scene has an empty `modes` object | §20 rule 26 |
-| `invalid/profile-mismatch.json` | `profile: "core"` but document contains `prefabs` | §2.1, §10 rule 18 |
+| `invalid/level-mismatch.json` | `level: "core"` but document contains `prefabs` | §2.1, §10 rule 18 |
 
 ## Using the fixtures
 

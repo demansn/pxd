@@ -4,13 +4,13 @@ A prefab is a reusable subtree declared once and instantiated by `type`. Each in
 
 ## Library document
 
-A document with a top-level `prefabs` map is a **Library** profile:
+A document with a top-level `prefabs` map is a **Library** level:
 
 ```json
 {
     "format": "pxd",
     "version": 1,
-    "profile": "library",
+    "level": "library",
     "prefabs": {
         "Button.primary": {
             "id": "root",
@@ -59,7 +59,7 @@ If you want per-instance customization, pass it through the prefab body via deci
 {
     "format": "pxd",
     "version": 1,
-    "profile": "library",
+    "level": "library",
     "root": {
         "id": "menu",
         "type": "container",

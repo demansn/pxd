@@ -23,7 +23,7 @@ import type { CoreDocument } from "pxd";
 const initialDoc: CoreDocument = {
     format: "pxd",
     version: 1,
-    profile: "core",
+    level: "core",
     root: {
         id: "root",
         type: "container",
@@ -64,7 +64,7 @@ const initialDoc: CoreDocument = {
 const patchedDoc: CoreDocument = {
     format: "pxd",
     version: 1,
-    profile: "core",
+    level: "core",
     root: {
         id: "root",
         type: "container",

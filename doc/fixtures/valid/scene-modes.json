@@ -1,7 +1,7 @@
 {
   "format": "pxd",
   "version": 1,
-  "profile": "scene",
+  "level": "scene",
   "prefabs": {
     "Slider.portrait": {
       "id": "root",

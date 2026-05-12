@@ -12,7 +12,7 @@ There is no linter and no separate watch task. Tests are written in `node:test` 
 
 ## Architecture
 
-This is a Pixi.js-bound reader for PXD v1 documents (spec: `doc/pxd-v1.md`). It supports **Core + Library** profiles only; Scene-shape documents are rejected at validation. The reference implementation in `reference/pxd-reader/` is the spec-faithful canonical reader — this library vendors `types`, validation rules, and intrinsic builders from it rather than depending on it, so `src/` stays self-contained.
+This is a Pixi.js-bound reader for PXD v1 documents (spec: `doc/pxd-v1.md`). It supports **Core + Library** levels only; Scene-shape documents are rejected at validation. The reference implementation in `reference/pxd-reader/` is the spec-faithful canonical reader — this library vendors `types`, validation rules, and intrinsic builders from it rather than depending on it, so `src/` stays self-contained.
 
 ### The two entry points
 
@@ -44,7 +44,7 @@ Both flow through one `NodeType { create, assign }` registry (`src/context.ts`, 
 
 ### What's intentionally out of scope
 
-No Scene profile, no per-node §9.2 extension handlers (payloads silently ignored), no document-level extensions / asset loading, no reactivity (bindings resolve once per call — re-call `apply` on change), no tree → PXD serialization.
+No Scene level, no per-node §9.2 extension handlers (payloads silently ignored), no document-level extensions / asset loading, no reactivity (bindings resolve once per call — re-call `apply` on change), no tree → PXD serialization.
 
 ## Working with the spec
 

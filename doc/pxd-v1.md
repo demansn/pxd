@@ -4,30 +4,30 @@ Status: v1
 
 PXD is a portable layout configuration format for Pixi.js-based applications. It specifies how trees of visual nodes are serialized and consumed, without encoding engine-specific runtime behavior.
 
-The specification is layered into three profiles, each building on the previous:
+The specification is layered into three levels, each building on the previous:
 
 - **Core** — a single tree of nodes. The minimum useful document.
 - **Library** — adds reusable named trees (prefabs).
 - **Scene** — adds multiple named scenes with viewport-dependent modes.
 
-Part I defines the Core profile and is self-sufficient: a reader that only supports Core does not need to read Parts II or III.
+Part I defines the Core level and is self-sufficient: a reader that only supports Core does not need to read Parts II or III.
 
 The key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY follow RFC 2119.
 
 ---
 
-## Reader profile vs document shape
+## Reader level vs document shape
 
-The word "profile" is used in two senses that MUST NOT be conflated:
+The word "level" is used in two senses that MUST NOT be conflated:
 
-- **Reader profile** — the capability tier of a runtime implementation. Reader profiles form a strict superset: a Library reader does everything a Core reader does; a Scene reader does everything a Library reader does.
+- **Reader level** — the capability tier of a runtime implementation. Reader levels form a strict superset: a Library reader does everything a Core reader does; a Scene reader does everything a Library reader does.
 - **Document shape** — the top-level structure of a concrete document. Shapes are mutually exclusive: a *core-shape* document has `root`; a *library-shape* document has `root` + `prefabs`; a *scene-shape* document has `scenes` (with optional `prefabs`). A valid library-shape document is **not** a valid scene-shape document.
 
-The connection: a Scene reader accepts any of the three shapes; a Library reader accepts core-shape and library-shape; a Core reader accepts only core-shape. Producers pick shape by need; readers pick profile by capability.
+The connection: a Scene reader accepts any of the three shapes; a Library reader accepts core-shape and library-shape; a Core reader accepts only core-shape. Producers pick shape by need; readers pick level by capability.
 
 ---
 
-# Part I — Core Profile
+# Part I — Core Level
 
 ## 1. Overview
 
@@ -35,7 +35,7 @@ The connection: a Scene reader accepts any of the three shapes; a Library reader
 - Simple: a minimum-subset Core reader (container / sprite / text, no masks, no custom types) fits in under 50 lines of TypeScript; a full Core reader covering every intrinsic type plus masks fits in roughly 100 lines. See the reference implementation at `../../../reference/pxd-reader/` for the latter.
 - Portable: engine-agnostic across any Pixi.js application.
 - Extensible: glTF-style extension mechanism with document-level and per-node payloads.
-- Layered: each profile is independently useful.
+- Layered: each level is independently useful.
 - Strictly documented: RFC 2119 language throughout.
 
 ### Non-goals
@@ -54,7 +54,7 @@ Every PXD document has this envelope:
 {
   "format": "pxd",
   "version": 1,
-  "profile": "core",
+  "level": "core",
   "extensionsUsed": [],
   "extensionsRequired": [],
   "extensions": {},
@@ -66,7 +66,7 @@ Every PXD document has this envelope:
 |---|---|---:|---|
 | `format` | string | yes | MUST be `"pxd"` |
 | `version` | integer | yes | MUST be `1` for this specification |
-| `profile` | string | no | One of `"core"`, `"library"`, `"scene"`. If present, enforced |
+| `level` | string | no | One of `"core"`, `"library"`, `"scene"`. If present, enforced |
 | `extensionsUsed` | string[] | no | Extension identifiers referenced anywhere in the document |
 | `extensionsRequired` | string[] | no | Subset of `extensionsUsed` that a reader MUST support |
 | `extensions` | object | no | Document-scoped extension payloads keyed by identifier |
@@ -74,9 +74,9 @@ Every PXD document has this envelope:
 
 Additional top-level fields (`prefabs`, `scenes`) are introduced in Parts II and III.
 
-### 2.1 Profile field semantics
+### 2.1 Level field semantics
 
-The `profile` field is optional.
+The `level` field is optional.
 
 - **If present**, the reader MUST verify the document shape matches:
   - `"core"` requires `root` without `prefabs` or `scenes`.
@@ -85,7 +85,7 @@ The `profile` field is optional.
 
   On mismatch, the reader MUST reject the document with an error.
 
-- **If absent**, the reader infers the profile from shape:
+- **If absent**, the reader infers the level from shape:
   - `scenes` present → scene.
   - `prefabs` present without `scenes` → library.
   - Otherwise → core.
@@ -172,7 +172,7 @@ The base node does NOT define `anchorX`/`anchorY` or `pivotX`/`pivotY`. Pixi.js 
 
 Only composable node types may carry `children`. In Core, the only composable intrinsic type is `container`. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`, `spine`) MUST NOT have `children`.
 
-Runtime-registered nodes (§5) MUST NOT have `children` in Core; they receive their construction inputs through `props` (§5). A future profile MAY relax this.
+Runtime-registered nodes (§5) MUST NOT have `children` in Core; they receive their construction inputs through `props` (§5). A future level MAY relax this.
 
 Prefab references (Part II) are composable according to their prefab's root.
 
@@ -225,7 +225,7 @@ Decision values are NOT permitted on:
 
 ## 4. Intrinsic types
 
-This section defines the intrinsic node types available in all profiles.
+This section defines the intrinsic node types available in all levels.
 
 ### 4.1 `container`
 
@@ -430,7 +430,7 @@ Out of scope:
 
 - Reactivity and change subscriptions. A reader MAY resolve bindings once at instantiation and treat the tree as a snapshot, or MAY rebuild affected nodes when sources change. Both are spec-compliant.
 - Locale switching strategy, fallback chains, pluralization, and formatting.
-- Numeric or structural interpolation (positions, sizes, conditional children). A future profile MAY add a structured binding form.
+- Numeric or structural interpolation (positions, sizes, conditional children). A future level MAY add a structured binding form.
 
 Localization is one application of this mechanism: text content via `text: "{locale.title}"`, font selection via `style: "{locale.h1}"`, locale-dependent imagery via `texture: "{locale.logo}"`. Geometric differences across locales (RTL flipping, line breaking, per-locale repositioning) are NOT addressed here.
 
@@ -525,7 +525,7 @@ A valid core-shape document satisfies all of the following:
 15. `extensionsRequired` ⊆ `extensionsUsed`, when both are present.
 16. Every identifier in `extensionsRequired` is recognized by the reader.
 17. Every non-intrinsic `type` value is a runtime-registered type known to the reader. (In core-shape documents there are no prefabs.)
-18. If `profile` is present, the document shape matches it (§2.1).
+18. If `level` is present, the document shape matches it (§2.1).
 
 ---
 
@@ -559,9 +559,9 @@ A Core reader MUST NOT:
 
 ---
 
-# Part II — Library Profile
+# Part II — Library Level
 
-The Library profile extends Core with reusable named trees (prefabs). A Library reader accepts every document a Core reader accepts, plus library-shape documents.
+The Library level extends Core with reusable named trees (prefabs). A Library reader accepts every document a Core reader accepts, plus library-shape documents.
 
 ## 12. `prefabs` map
 
@@ -644,7 +644,7 @@ A valid library-shape document satisfies all Core validation rules (§10) plus:
 21. The directed prefab-to-prefab reference graph is acyclic.
 22. Every non-intrinsic `type` value resolves either to a prefab name in `prefabs` or to a runtime-registered type known to the reader.
 23. No prefab reference carries `props` or `children`.
-24. If `profile` is present and equals `"library"`, the document has both `root` and `prefabs` and does not contain `scenes`.
+24. If `level` is present and equals `"library"`, the document has both `root` and `prefabs` and does not contain `scenes`.
 
 ---
 
@@ -664,9 +664,9 @@ A Library reader MAY:
 
 ---
 
-# Part III — Scene Profile
+# Part III — Scene Level
 
-The Scene profile replaces the single `root` with a collection of named scenes, each with one or more mode trees for different viewports. A Scene reader accepts every document a Library reader accepts, plus scene-shape documents.
+The Scene level replaces the single `root` with a collection of named scenes, each with one or more mode trees for different viewports. A Scene reader accepts every document a Library reader accepts, plus scene-shape documents.
 
 ## 17. `scenes` map
 
@@ -738,7 +738,7 @@ A valid scene-shape document satisfies all Core (§10) and Library (§15) node-l
 26. Each scene has a `modes` object with at least one key.
 27. Each mode tree is a valid node tree under Core rules.
 28. The document does NOT contain `root`.
-29. If `profile` is present and equals `"scene"`, the document has `scenes` and does not contain `root`.
+29. If `level` is present and equals `"scene"`, the document has `scenes` and does not contain `root`.
 
 ---
 
@@ -769,7 +769,7 @@ A scene-shape document exercising prefabs, multiple modes, cross-mode identity, 
 {
   "format": "pxd",
   "version": 1,
-  "profile": "scene",
+  "level": "scene",
   "extensionsUsed": ["VENDOR_physics"],
   "prefabs": {
     "Slider.portrait": {
@@ -834,7 +834,7 @@ Notes:
 
 The shape of this specification follows established practice.
 
-- **SVG profiles** (Tiny / Basic / Full) — the W3C precedent for explicit layered conformance tiers in a single format. PXD's Core / Library / Scene profiles are directly inspired by this pattern.
+- **SVG profiles** (Tiny / Basic / Full) — the W3C precedent for explicit layered conformance tiers in a single format. PXD's Core / Library / Scene levels are directly inspired by this pattern.
 - **glTF 2.0** — `extensionsUsed`, `extensionsRequired`, and per-node `extensions` are taken directly from glTF. A single producer-private `extras` bag follows glTF convention.
 - **Unity (post-2018 nested prefabs)** — variants-as-named-prefabs mirrors the pattern Unity adopted after moving away from per-instance stored overrides.
 - **Godot `.tscn`** — the split between built-in intrinsic types and scripted opaque types informs the distinction between intrinsic types and runtime-registered types in Core.

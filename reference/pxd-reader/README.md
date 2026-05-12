@@ -38,7 +38,7 @@ Each file under `src/examples/` is a standalone, commented module focused on one
 | File | Demonstrates |
 |---|---|
 | `examples/custom-type.ts` | Registering a runtime-registered node type via `nodeTypes`. |
-| `examples/prefabs.ts` | Library profile — reusable named trees, including transitive prefab → prefab references. |
+| `examples/prefabs.ts` | Library level — reusable named trees, including transitive prefab → prefab references. |
 | `examples/decisions-bindings.ts` | §3.6 decision values (`activeTags`) and §7.2 string bindings (`{path}`). |
 | `examples/slots-and-find.ts` | `slot` nodes, `mountSlot`, `requirePath` / `findAll` label-path lookup. |
 | `examples/apply-hot-reload.ts` | `apply` as a stylesheet — theme/locale swap on a built tree. |

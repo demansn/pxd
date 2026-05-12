@@ -34,7 +34,7 @@
 ## 4. JSON Schema
 
 - [ ] Добавить `pxd.schema.json`.
-- [ ] Покрыть Core + Library profile.
+- [ ] Покрыть Core + Library level.
 - [ ] Добавить schema для intrinsic node types.
 - [ ] Добавить schema для decision maps.
 - [ ] Добавить schema для prefabs.
@@ -100,7 +100,7 @@
 
 ## 12. Будущее, не минимум
 
-- [ ] Scene profile.
+- [ ] Scene level.
 - [ ] Reconcile с добавлением/удалением children.
 - [ ] Tree → PXD serialization.
 - [ ] Producer tooling / Figma exporter.

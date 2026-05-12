@@ -1,5 +1,5 @@
 /**
- * PXD v1 validator (Core + Library profiles only). Scene-shape rejected at entry.
+ * PXD v1 validator (Core + Library levels only). Scene-shape rejected at entry.
  * Reports the first violation with a rule reference (`doc/pxd-v1.md`).
  */
 
@@ -101,11 +101,11 @@ export function validate(input: unknown, options: ValidateOptions = {}): PxdDocu
         );
     }
 
-    // §2.1 / §10 rule 18 — profile matches shape
-    if (typeof doc.profile === "string" && doc.profile !== shape) {
+    // §2.1 / §10 rule 18 — level matches shape
+    if (typeof doc.level === "string" && doc.level !== shape) {
         throw new ValidationError(
             "rule 18",
-            `profile '${doc.profile}' does not match document shape '${shape}'`,
+            `level '${doc.level}' does not match document shape '${shape}'`,
         );
     }
 

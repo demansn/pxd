@@ -1,7 +1,7 @@
 {
   "format": "pxd",
   "version": 1,
-  "profile": "library",
+  "level": "library",
   "prefabs": {
     "Button.primary": {
       "id": "root",

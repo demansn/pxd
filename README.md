@@ -1,6 +1,6 @@
 # `pxd` — minimal PXD library for Pixi.js
 
-A tiny Pixi.js library that reads PXD v1 documents (Core + Library profiles), builds Pixi `Container` trees, walks them, and applies documents to existing trees as stylesheets. The whole library is ~1100 LOC of TypeScript and ships zero dependencies beyond `pixi.js`.
+A tiny Pixi.js library that reads PXD v1 documents (Core + Library levels), builds Pixi `Container` trees, walks them, and applies documents to existing trees as stylesheets. The whole library is ~1100 LOC of TypeScript and ships zero dependencies beyond `pixi.js`.
 
 Spec: [`doc/pxd-v1.md`](./doc/pxd-v1.md).
 
@@ -125,7 +125,7 @@ pxd/
 
 ## What it supports
 
-- **Profiles:** Core, Library (with transitive prefab composition and §13.2 scope isolation per instance).
+- **Levels:** Core, Library (with transitive prefab composition and §13.2 scope isolation per instance).
 - **Decision values (§3.6):** active-tag set, lexicographic selector validation, declaration-order tie-break.
 - **String bindings (§7.2):** `{path}` substitution, `\{` and `\\` escapes, no rescanning.
 - **Masks (§8):** forward references resolved in two passes; apply rebinds by id against existing tree.
@@ -134,7 +134,7 @@ pxd/
 
 ## What it doesn't do
 
-- **No Scene profile.** Scene-shape documents are rejected with a clear error.
+- **No Scene level.** Scene-shape documents are rejected with a clear error.
 - **No per-node extension handlers (§9.2).** `extensions` payloads are silently ignored.
 - **No document-level extensions.** Asset/resource manifest loading is the host's concern.
 - **No reactivity.** Bindings resolve once per `build` / `apply`; call `apply` again on change.
