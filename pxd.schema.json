@@ -82,6 +82,20 @@
         { "$ref": "#/$defs/decisionString" }
       ]
     },
+    "customField": {
+      "$comment": "Custom runtime fields are owned by the host. Scalar decision maps are structurally accepted here; validate.ts enforces decision-map consistency.",
+      "anyOf": [
+        { "type": "null" },
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "$ref": "#/$defs/decisionString" },
+        { "$ref": "#/$defs/decisionNumber" },
+        { "$ref": "#/$defs/decisionBoolean" },
+        { "type": "array" },
+        { "type": "object" }
+      ]
+    },
     "intrinsicTypeName": {
       "enum": ["container", "sprite", "text", "graphics", "slot", "spine"]
     },
@@ -199,15 +213,20 @@
     "customNode": {
       "allOf": [{ "$ref": "#/$defs/baseNode" }],
       "properties": {
-        "type":  { "type": "string", "minLength": 1 },
-        "props": { "type": "object" }
+        "type": { "type": "string", "minLength": 1 }
       },
       "required": ["type"],
       "not": {
-        "properties": { "type": { "$ref": "#/$defs/intrinsicTypeName" } },
-        "required": ["type"]
+        "anyOf": [
+          {
+            "properties": { "type": { "$ref": "#/$defs/intrinsicTypeName" } },
+            "required": ["type"]
+          },
+          { "required": ["props"] },
+          { "required": ["children"] }
+        ]
       },
-      "unevaluatedProperties": false
+      "unevaluatedProperties": { "$ref": "#/$defs/customField" }
     },
     "node": {
       "oneOf": [

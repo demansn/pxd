@@ -15,7 +15,6 @@ const SEMANTIC_ONLY = new Set([
     "duplicate-ids.json",
     "mask-out-of-tree.json",
     "prefab-cycle.json",
-    "prefab-ref-with-props.json",
     "decision-unsorted-selector.json",
     "required-not-in-used.json",
     "extension-required-unsupported.json",
