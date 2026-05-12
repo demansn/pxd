@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>PXD v1 — Core Reader Demo</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0b0d10;
+            font-family: system-ui, sans-serif;
+            color: #d1d5db;
+        }
+        #canvas-host canvas {
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "pixi.js": "https://cdn.jsdelivr.net/npm/pixi.js@8.18.1/dist/pixi.mjs",
+            "pxd": "/dist/src/index.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="canvas-host"></div>
+    <script type="module" src="./dist/src/demo.js"></script>
+</body>
+</html>

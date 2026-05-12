@@ -1,0 +1,18 @@
+{
+  "name": "pxd-reader-demo",
+  "version": "0.2.0",
+  "description": "Browser demo and usage examples for the `pxd` library",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "demo:serve": "python3 -m http.server 8080 --directory ../.."
+  },
+  "dependencies": {
+    "pixi.js": "^8.7.0",
+    "pxd": "file:../.."
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
