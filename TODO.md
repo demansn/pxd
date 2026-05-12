@@ -1,103 +1,136 @@
-# TODO: сделать `pxd` самодостаточной библиотекой
+# TODO: упростить и усилить `pxd` как лёгкую Pixi.js-базу
 
-Цель: маленькая независимая Pixi.js-библиотека для чтения, построения и применения PXD-документов без зависимости от onearm.
+Цель: маленькая независимая Pixi.js-библиотека для декларативных деревьев, которую можно использовать в любом Pixi.js-движке — от минимального runtime (`validate/build/apply/find/slots`) до расширенного слоя с custom node types, prefabs, CLI, schema и будущим reconcile.
 
-## 1. Упаковка npm-пакета
+## Принципы
 
-- [x] Убрать `"private": true` из `package.json`.
-- [x] Добавить `license`.
-- [x] Добавить `repository`.
-- [x] Добавить `exports` для ESM/import и типов.
-- [x] Добавить `files`, чтобы публиковались только нужные файлы.
-- [x] Добавить `clean` script для удаления `dist`.
-- [x] Сделать `build` через clean rebuild.
-- [x] Добавить `prepack`/`prepublishOnly`, чтобы пакет собирался перед публикацией.
-- [x] Проверить `npm pack --dry-run`.
+- [ ] Держать публичный API маленьким: `validate`, `build`, `apply`, `find/findAll/requirePath`, `getSlot/mountSlot`.
+- [ ] Всё продвинутое включать через options, а не через усложнение базового сценария.
+- [ ] Главный механизм расширения — `nodeTypes`, не extensions.
+- [ ] Intrinsic types — строгие и хорошо описанные; custom types — свободные и responsibility пользователя.
+- [ ] `apply()` по умолчанию и пока фактически только **patch-only**: отсутствующие поля не сбрасываются.
+- [ ] `mode: "full"` / reconcile оставить как будущий дизайн, не реализовывать частично.
+- [ ] Не вводить type packs / custom schemas для сторонних типов, пока нет сильной необходимости.
 
-## 2. Чистые артефакты публикации
+## 1. Упрощение custom node model
 
-- [x] Не публиковать `node_modules`.
-- [x] Не публиковать `dist/test`.
-- [x] Не публиковать stale-файлы из старого `dist`.
-- [x] Решить, публиковать ли `src` и `test`; если нет — исключить.
-- [x] Оставить в пакете только runtime build, типы, README, spec/docs/schema.
+- [x] Удалить `props` из public модели жёстко — библиотека ещё ранняя (`0.x`).
+- [x] Обновить `types.ts`: убрать `props` из `CustomNode`.
+- [x] Обновить `validate.ts`: больше не требовать/разрешать special-case `props` для custom/prefab/runtime nodes.
+- [x] Обновить `pxd.schema.json`: custom nodes принимают дополнительные top-level поля, но без `props` как особого контейнера.
+- [x] Обновить `doc/pxd-v1.md`, README и guides: custom параметры лежат прямо на node.
+- [x] Добавить migration note: было `{ props: { text } }`, стало `{ text }`.
+- [x] Убрать `props` из `NON_DECIDABLE_KEYS` — custom top-level поля должны автоматически проходить decision resolution.
+- [x] Добавить тест: custom scalar field с decision map приходит в `NodeType.assign()` уже resolved.
 
-## 3. Синхронизация документации и API
+## 2. Custom nodes как composable containers
 
-- [x] Везде заменить старые термины `builders`/`appliers` на `defaultNodeTypes`.
-- [x] Везде использовать термин `assign`, не `patch`.
-- [x] Проверить `README.md` на соответствие реальному API.
-- [x] Проверить guides в `doc/guides/*`.
-- [x] Проверить examples/reference docs.
-- [x] Убрать из документации обещания, которые runtime пока не выполняет.
+- [ ] Разрешить `children` у custom/runtime node types.
+- [ ] В build: custom node строится обычным pipeline, затем его `children` добавляются в созданный `Container`.
+- [ ] В apply: custom node children обходятся так же, как `container.children`.
+- [ ] В validate: убрать правило “runtime-registered nodes MUST NOT have children”.
+- [ ] Сохранить правило для prefab references отдельно, если prefab-ref children всё ещё запрещены.
+- [ ] Добавить тест: custom `Panel` с `children` build/apply работает.
+- [ ] Документировать: base fields зарезервированы для всех узлов (`id/type/label/x/y/.../children/mask`). Custom типы не должны переиспользовать их под другой смысл.
 
-## 4. JSON Schema
+## 3. Чёткая семантика `apply()`
 
-- [x] Добавить `pxd.schema.json`.
-- [x] Покрыть Core + Library level.
-- [x] Добавить schema для intrinsic node types.
-- [x] Добавить schema для decision maps.
-- [x] Добавить schema для prefabs.
-- [x] Добавить тесты, что fixtures проходят/падают по schema.
+- [ ] Явно задокументировать: `apply()` — patch semantics.
+- [ ] Отсутствующее поле не сбрасывает старое значение.
+- [ ] Отсутствующий child не удаляет live child.
+- [ ] Type mismatch silent: type-specific assign может skip, base fields всё равно применяются.
+- [ ] Missing child → `onMissing`, subtree skipped.
+- [ ] Проверить и зафиксировать тестами поведение удаления/отсутствия `mask`.
+- [ ] Проверить и зафиксировать тестами поведение удаления/смены `label`.
+- [ ] Не добавлять `mode: "full"` сейчас; оставить в roadmap.
 
-## 5. CLI
+## 4. Intrinsic types: стабильная Pixi-база
 
-- [x] Добавить `bin` entry в `package.json`.
-- [x] Реализовать `pxd validate <file>`.
-- [x] Реализовать понятные ошибки validation/schema.
-- [x] Добавить `pxd inspect <file>` для краткого дерева/статистики.
-- [x] Добавить CLI tests.
+- [ ] Сначала довести текущие built-ins до точной и протестированной семантики:
+  - [ ] `container`: base/pivot fields.
+  - [ ] `sprite`: `texture`, `frame`, `tint`, `width`, `height`, `anchor`.
+  - [ ] `text`: `style`, `maxWidth`, решить судьбу `fit` — реализовать или убрать.
+  - [ ] `graphics`: все shape cases, ошибки неполных shape fields.
+  - [ ] `slot`: реализовать/описать `width` и `height`.
+- [ ] Решить судьбу `spine`: скорее убрать из default intrinsic support и оставить через custom `nodeTypes`.
+- [ ] Затем расширить PXD v1 intrinsic набор практичными Pixi v8 типами:
+  - [ ] `nineSliceSprite`.
+  - [ ] `tilingSprite`.
+  - [ ] `animatedSprite`.
+  - [ ] `bitmapText`.
+- [ ] Не добавлять engine/game-specific типы в базу: buttons, reels, layout controllers, Spine/game objects — через custom `nodeTypes`.
 
-## 6. Чёткая семантика `apply()`
+## 5. Descriptor как source of truth для intrinsic structure
 
-- [ ] Решить: `apply()` — это patch или full document apply.
-- [ ] Если patch: явно задокументировать, что отсутствующие поля не сбрасываются.
-- [ ] Если full apply: сбрасывать отсутствующие поля в defaults.
-- [ ] Проверить поведение удаления `mask`.
-- [ ] Проверить поведение удаления/смены `label`.
-- [ ] Добавить тесты на удаление ранее заданных полей.
+- [ ] Ввести простой TS descriptor layer для intrinsic node structure: fields, required fields, decidable flags, composable flag.
+- [ ] Использовать descriptor для:
+  - [ ] `INTRINSIC` списка;
+  - [ ] `NON_COMPOSABLE` списка;
+  - [ ] validation required/type checks;
+  - [ ] JSON Schema generation.
+- [ ] Не переносить Pixi behavior в descriptor: `create/assign` оставить ручным читаемым кодом в `nodeTypes.ts`.
+- [ ] Добавить `npm run generate:schema`.
+- [ ] Генерировать `pxd.schema.json` из descriptor.
+- [ ] Добавить тест, что generated schema совпадает с committed `pxd.schema.json`.
+- [ ] Позже рассмотреть генерацию markdown-таблиц для docs из descriptor.
 
-## 7. Довести базовые intrinsic-типы
+## 6. Validation/schema policy
 
-- [ ] `container`: проверить все base/pivot поля.
-- [ ] `sprite`: проверить texture/frame/tint/width/height/anchor.
-- [ ] `text`: точно описать и протестировать `maxWidth`.
-- [ ] `text.fit`: реализовать или убрать из заявленного API.
-- [ ] `graphics`: проверить все shape cases и ошибки неполных shape fields.
-- [ ] `slot`: реализовать/описать `width` и `height`.
-- [ ] `spine`: либо реализовать через extension/custom type, либо убрать из default intrinsic support.
-- [ ] рассмотреть все другие типы обьектов которые есть в pixi.js 8 и решить, какие поддерживать как intrinsic, а какие через extension/custom type.
+- [ ] Built-in intrinsic nodes strict: unknown fields запрещены.
+- [ ] Custom nodes open: дополнительные top-level поля разрешены.
+- [ ] Custom top-level scalar fields могут быть decision maps и автоматически resolve-ятся.
+- [ ] Structural fields не decidable: `id`, `type`, `mask`, `children`, `extensions`, `points`.
+- [ ] Base fields валидируются одинаково для intrinsic и custom nodes.
+- [ ] Semantic-only rules остаются в `validate()`, даже если JSON Schema их не выражает.
 
-## 8. Extension API
+## 7. Extensions — roadmap, не текущая архитектура
 
-- [ ] Добавить `extensions` handlers в build/apply options.
-- [ ] Поддержать `extensionsRequired` через переданные handlers.
-- [ ] Вызвать document-level extension hooks.
-- [ ] Вызвать node-level extension hooks.
-- [ ] Описать порядок выполнения относительно `NodeType.assign` и base fields.
-- [ ] Добавить тесты на supported/required/ignored extensions.
+- [ ] Не развивать extension runtime API сейчас.
+- [ ] Не строить архитектуру вокруг `extensionsUsed/extensionsRequired`.
+- [ ] Оставить тему extensions в roadmap как следующую итерацию/версию, если появится реальная потребность.
+- [ ] В текущих docs убрать extensions из основного mental model.
+- [ ] Решить отдельно: оставить opaque ignored fields для spec-compat или удалить в будущей breaking версии.
 
-## 9. Lifecycle для custom node types
+## 8. CLI и tooling
 
-- [ ] Добавить `destroy`/cleanup hook для будущего reconcile/rebuild.
-- [ ] Задокументировать, что должно жить в `create`, а что в `assign`.
+- [ ] Добавить `bin` entry в `package.json`.
+- [ ] Реализовать `pxd validate <file>`.
+- [ ] Реализовать понятные ошибки validation/schema.
+- [ ] Реализовать `pxd inspect <file>` для краткого дерева/статистики.
+- [ ] Добавить CLI tests.
+- [ ] CLI не должен усложнять runtime и не должен быть dependency runtime API.
 
-## 10. Examples и проверяемые демо
+## 9. Examples и проверяемые демо
 
 - [ ] Минимальный browser example.
-- [ ] Custom node type example.
-- [ ] Hot reload/apply example.
+- [ ] Custom node type example без `props`, с top-level custom fields.
+- [ ] Custom composable node example.
+- [ ] Hot reload/apply patch example.
 - [ ] Slots example.
+- [ ] Prefabs example.
 - [ ] Проверять examples в build/CI.
 
-## 11. CI / качество
+## 10. CI / качество
 
 - [ ] Добавить GitHub Actions для `npm ci`, `npm test`, `npm pack --dry-run`.
-- [ ] Добавить lint/format или явно отказаться от них.
-- [ ] Добавить typecheck как отдельный script.
+- [ ] Добавить `typecheck` script как отдельную команду.
+- [ ] Решить lint/format: добавить или явно отказаться.
 - [ ] Добавить changelog/release notes.
+- [ ] Проверять, что `npm pack --dry-run` публикует только нужные файлы.
+
+## 11. Документация
+
+- [ ] README переписать вокруг нового mental model: маленький API + `nodeTypes` как расширение.
+- [ ] Guides обновить под custom top-level fields и custom children.
+- [ ] В docs явно описать reserved base fields.
+- [ ] В docs явно описать patch semantics `apply()`.
+- [ ] В docs явно описать, что custom fields валидирует пользователь/движок.
+- [ ] В docs не обещать extensions/reconcile/full apply до реализации.
 
 ## 12. Будущее, не минимум
 
-- [ ] Reconcile с добавлением/удалением children.
+- [ ] `apply(doc, root, { mode: "full" })` — full field reset semantics.
+- [ ] Reconcile с добавлением/удалением/replacement children.
+- [ ] Lifecycle hooks для custom node types: cleanup/destroy перед reconcile/replacement.
+- [ ] Extension API, если custom node types перестанут покрывать реальные сценарии.
 - [ ] Tree → PXD serialization.
