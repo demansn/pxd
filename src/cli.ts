@@ -5,7 +5,7 @@ import { Ajv2020 as Ajv } from "ajv/dist/2020.js";
 import type { ErrorObject } from "ajv";
 
 import { ValidationError, documentShape, validate } from "./validate.js";
-import type { PxdDocument } from "./types.js";
+import type { LibraryDocument, Node, PxdDocument } from "./types.js";
 
 const schemaUrl = new URL("../../pxd.schema.json", import.meta.url);
 const schema = JSON.parse(readFileSync(schemaUrl, "utf8"));
@@ -104,6 +104,75 @@ function validateCommand(file: string): number {
     return 0;
 }
 
+interface Stats {
+    nodes: number;
+    types: Map<string, number>;
+}
+
+function createStats(): Stats {
+    return { nodes: 0, types: new Map<string, number>() };
+}
+
+function addNode(stats: Stats, node: Node): void {
+    stats.nodes += 1;
+    stats.types.set(node.type, (stats.types.get(node.type) ?? 0) + 1);
+    if (Array.isArray(node.children)) {
+        for (const child of node.children) addNode(stats, child);
+    }
+}
+
+function formatTypes(types: Map<string, number>): string {
+    return [...types.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([type, count]) => `${type}=${count}`)
+        .join(", ");
+}
+
+function formatNode(node: Node, depth = 0): string[] {
+    const indent = "  ".repeat(depth);
+    const suffix = typeof node.label === "string" && node.label !== node.id
+        ? ` label=${node.label}`
+        : "";
+    const lines = [`${indent}- ${node.id} (${node.type})${suffix}`];
+    if (Array.isArray(node.children)) {
+        for (const child of node.children) lines.push(...formatNode(child, depth + 1));
+    }
+    return lines;
+}
+
+function inspectCommand(file: string): number {
+    const result = validateDocument(file);
+    if (!result.ok) {
+        printValidationFailure(file, result);
+        return 1;
+    }
+
+    const shape = documentShape(result.doc);
+    const rootStats = createStats();
+    addNode(rootStats, result.doc.root);
+
+    console.log(`file: ${file}`);
+    console.log(`shape: ${shape}`);
+    console.log(`nodes: ${rootStats.nodes}`);
+    console.log(`types: ${formatTypes(rootStats.types)}`);
+
+    if (shape === "library") {
+        const prefabs = (result.doc as LibraryDocument).prefabs;
+        const prefabStats = createStats();
+        for (const prefab of Object.values(prefabs)) addNode(prefabStats, prefab);
+        console.log(`prefabs: ${Object.keys(prefabs).length}`);
+        console.log(`prefab nodes: ${prefabStats.nodes}`);
+        console.log(`prefab types: ${formatTypes(prefabStats.types)}`);
+    } else {
+        console.log("prefabs: 0");
+    }
+
+    console.log("tree:");
+    console.log(formatNode(result.doc.root).join("\n"));
+
+    return 0;
+}
+
 export function main(argv = process.argv.slice(2)): number {
     const [command, file] = argv;
     if ((command !== "validate" && command !== "inspect") || !file || argv.length !== 2) {
@@ -112,10 +181,7 @@ export function main(argv = process.argv.slice(2)): number {
     }
 
     if (command === "validate") return validateCommand(file);
-
-    // `inspect` is implemented in Task 4.
-    console.error("inspect is not implemented yet");
-    return 2;
+    return inspectCommand(file);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
