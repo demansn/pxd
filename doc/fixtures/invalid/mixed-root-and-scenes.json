@@ -1,0 +1,12 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": { "id": "root", "type": "container" },
+  "scenes": {
+    "Main": {
+      "modes": {
+        "default": { "id": "root", "type": "container" }
+      }
+    }
+  }
+}

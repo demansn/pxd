@@ -1,0 +1,11 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      { "id": "title", "type": "text", "text": "Hello" }
+    ]
+  }
+}

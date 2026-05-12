@@ -1,0 +1,32 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "profile": "core",
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "title",
+        "type": "text",
+        "text": "{locale.title}",
+        "style": "{locale.h1}"
+      },
+      {
+        "id": "betLabel",
+        "type": "text",
+        "text": "Bet: {settings.bet} {locale.coins}"
+      },
+      {
+        "id": "flag",
+        "type": "sprite",
+        "texture": "{locale.flagTexture}"
+      },
+      {
+        "id": "literalBrace",
+        "type": "text",
+        "text": "\\{not a binding}"
+      }
+    ]
+  }
+}

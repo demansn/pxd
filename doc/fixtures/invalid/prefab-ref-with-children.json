@@ -1,0 +1,26 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "prefabs": {
+    "Card": {
+      "id": "root",
+      "type": "container",
+      "children": [
+        { "id": "title", "type": "text", "text": "" }
+      ]
+    }
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "c1",
+        "type": "Card",
+        "children": [
+          { "id": "extra", "type": "sprite", "texture": "x" }
+        ]
+      }
+    ]
+  }
+}

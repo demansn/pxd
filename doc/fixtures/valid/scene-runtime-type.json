@@ -1,0 +1,23 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "scenes": {
+    "Menu": {
+      "modes": {
+        "default": {
+          "id": "root",
+          "type": "container",
+          "children": [
+            {
+              "id": "spinBtn",
+              "type": "Button",
+              "x": 400,
+              "y": 500,
+              "props": { "label": "SPIN", "variant": "primary" }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

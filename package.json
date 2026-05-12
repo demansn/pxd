@@ -1,0 +1,20 @@
+{
+  "name": "pxd",
+  "version": "0.1.0",
+  "description": "Minimal PXD v1 (Core+Library) library for Pixi.js — read, build, find, apply",
+  "type": "module",
+  "private": true,
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node dist/test/fixtures.test.js && node --test dist/test/build.test.js dist/test/apply.test.js dist/test/find.test.js dist/test/slots.test.js"
+  },
+  "peerDependencies": {
+    "pixi.js": "^8.7.0"
+  },
+  "devDependencies": {
+    "pixi.js": "^8.7.0",
+    "typescript": "^5.0.0"
+  }
+}

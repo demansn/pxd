@@ -1,0 +1,22 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "extensionsUsed": ["VENDOR_physics"],
+  "extensions": {
+    "VENDOR_physics": { "gravity": [0, 9.8] }
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "ball",
+        "type": "sprite",
+        "texture": "ball",
+        "extensions": {
+          "VENDOR_physics": { "shape": "circle", "radius": 16 }
+        }
+      }
+    ]
+  }
+}

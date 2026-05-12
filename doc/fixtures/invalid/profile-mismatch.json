@@ -1,0 +1,9 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "profile": "core",
+  "prefabs": {
+    "X": { "id": "root", "type": "container" }
+  },
+  "root": { "id": "root", "type": "container" }
+}

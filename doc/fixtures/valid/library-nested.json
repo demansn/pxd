@@ -1,0 +1,26 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "prefabs": {
+    "Icon": {
+      "id": "root",
+      "type": "sprite",
+      "texture": "icon"
+    },
+    "IconButton": {
+      "id": "root",
+      "type": "container",
+      "children": [
+        { "id": "bg", "type": "sprite", "texture": "btn_bg" },
+        { "id": "glyph", "type": "Icon", "x": 12, "y": 12 }
+      ]
+    }
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      { "id": "settingsBtn", "type": "IconButton", "x": 20, "y": 20 }
+    ]
+  }
+}

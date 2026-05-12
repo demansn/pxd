@@ -1,0 +1,7 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "extensionsUsed": ["VENDOR_unsupported"],
+  "extensionsRequired": ["VENDOR_unsupported"],
+  "root": { "id": "root", "type": "container" }
+}

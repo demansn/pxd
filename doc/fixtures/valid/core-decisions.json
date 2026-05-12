@@ -1,0 +1,32 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "profile": "core",
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "title",
+        "type": "text",
+        "text": "Hello",
+        "x": { "_": 100, "mobile": 50 },
+        "maxWidth": { "_": 320, "de": 400, "de+mobile": 360 }
+      },
+      {
+        "id": "logo",
+        "type": "sprite",
+        "texture": { "_": "logo", "de": "logo_de" },
+        "anchorX": { "_": 0, "mobile": 0.5 }
+      },
+      {
+        "id": "panel",
+        "type": "graphics",
+        "shape": "rect",
+        "width": { "_": 800, "mobile": 360 },
+        "height": 600,
+        "fill": { "_": "#1f1f1f", "dark": "#000000" }
+      }
+    ]
+  }
+}

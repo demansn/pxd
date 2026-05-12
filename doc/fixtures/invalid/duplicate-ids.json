@@ -1,0 +1,12 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      { "id": "dup", "type": "sprite", "texture": "a" },
+      { "id": "dup", "type": "sprite", "texture": "b" }
+    ]
+  }
+}

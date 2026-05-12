@@ -1,0 +1,30 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "clipRect",
+        "type": "graphics",
+        "shape": "rect",
+        "width": 400,
+        "height": 200,
+        "fill": "#ffffff"
+      },
+      {
+        "id": "bgLayer",
+        "type": "sprite",
+        "texture": "bg",
+        "mask": "clipRect"
+      },
+      {
+        "id": "fgLayer",
+        "type": "sprite",
+        "texture": "fg",
+        "mask": "clipRect"
+      }
+    ]
+  }
+}

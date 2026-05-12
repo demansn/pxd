@@ -1,0 +1,13 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "mask": { "_": "maskA", "mobile": "maskB" },
+    "children": [
+      { "id": "maskA", "type": "graphics", "shape": "rect", "width": 100, "height": 100, "fill": "#ffffff" },
+      { "id": "maskB", "type": "graphics", "shape": "rect", "width": 50, "height": 50, "fill": "#ffffff" }
+    ]
+  }
+}

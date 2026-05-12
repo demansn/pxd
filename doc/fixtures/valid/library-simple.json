@@ -1,0 +1,23 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "profile": "library",
+  "prefabs": {
+    "Button.primary": {
+      "id": "root",
+      "type": "container",
+      "children": [
+        { "id": "bg", "type": "sprite", "texture": "btn_bg" },
+        { "id": "caption", "type": "text", "text": "" }
+      ]
+    }
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      { "id": "playBtn", "type": "Button.primary", "x": 100, "y": 50 },
+      { "id": "quitBtn", "type": "Button.primary", "x": 100, "y": 120 }
+    ]
+  }
+}

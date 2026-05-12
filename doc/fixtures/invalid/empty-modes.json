@@ -1,0 +1,9 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "scenes": {
+    "Empty": {
+      "modes": {}
+    }
+  }
+}

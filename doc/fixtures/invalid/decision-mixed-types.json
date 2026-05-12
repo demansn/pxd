@@ -1,0 +1,9 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "x": { "_": 100, "mobile": "fifty" }
+  }
+}

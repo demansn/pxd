@@ -1,0 +1,160 @@
+# `pxd` — minimal PXD library for Pixi.js
+
+A tiny Pixi.js library that reads PXD v1 documents (Core + Library profiles), builds Pixi `Container` trees, walks them, and applies documents to existing trees as stylesheets. The whole library is ~1100 LOC of TypeScript and ships zero dependencies beyond `pixi.js`.
+
+Spec: [`doc/pxd-v1.md`](./doc/pxd-v1.md).
+
+**Guides**: [Getting started](./doc/guides/01-getting-started.md) · [Custom node types](./doc/guides/02-custom-node-types.md) · [Hot reload with apply](./doc/guides/03-hot-reload-with-apply.md) · [Decisions & bindings](./doc/guides/04-decisions-and-bindings.md) · [Prefabs](./doc/guides/05-prefabs.md) · [Slots](./doc/guides/06-slots.md)
+
+## Why this exists
+
+PXD separates **scene configuration** (positions, textures, styles, prefabs) from **scene logic** (state, reactions, animations). This library is the bridge for Pixi.js:
+
+- `build(doc, opts)` — turn a document into a fresh Pixi tree.
+- `apply(doc, root, opts)` — apply a document to an **already-built** Pixi tree (positions, textures, text content, etc. update in place). This is the killer feature: a designer changes a JSON file, your game patches the live tree without rebuilding.
+- `find(root, "hud.bet.value")` — dot-path lookup by `Container.label`.
+- `mountSlot(root, slotName, content)` — drop external content into named slot nodes.
+
+## Quickstart
+
+```bash
+cd libs/pxd
+npm install
+npm test
+```
+
+## Public API
+
+```ts
+import {
+    build, apply,
+    find, findAll, requirePath,
+    getSlot, mountSlot,
+    type BuildOptions, type ApplyOptions, type NodeType,
+} from "./src/index.js";
+
+// 1) Build a fresh tree
+const root = build(doc, {
+    resolve: {
+        texture: (id) => Assets.get(id),
+        style: (id) => styleTable[id],
+        binding: (path) => i18n.t(path),
+    },
+    activeTags: ["en", "mobile"],
+    nodeTypes: new Map([["SpinButton", {
+        create: (n) => new MySpinButton(n.props),
+        assign: (n, t) => t.setLabel(n.props?.label),
+    }]]),
+});
+
+// 2) Find children
+const betValue = requirePath<Text>(root, "hud.bet.value");
+
+// 3) Mount external content into a slot
+mountSlot(root, "Reels", new ReelsContainer());
+
+// 4) Apply a doc as stylesheet (hot reload, theme swap, locale swap)
+apply(updatedDoc, root, {
+    activeTags: ["en", "mobile", "dark"],
+    onMissing: (path) => console.warn("PXD miss:", path),
+});
+```
+
+## Design contract
+
+- **`Container.label = node.label ?? node.id`** — load-bearing for find/apply. PXD spec §3.2 makes label the semantic name; if the producer didn't supply one, `id` is used. Path queries always compare against `label`.
+- **Apply matches by label-path with immediate-child lookup.** For each PXD node we look for a child of the current Pixi parent with the same `label` (one hop, not deep search). Missing nodes → `onMissing` callback, then subtree skipped. Structure mismatch never throws.
+- **Type-mismatch is silent.** If PXD says `text` but the live target is `Sprite`, type-specific fields (`text`, `style`) are skipped. Base fields (`x`, `y`, `alpha`, …) still flow through.
+- **Mask in apply** rebinds to the existing tree by `id` (validation rule 6 is relaxed for apply because mask source may live outside the patch doc).
+- **Slots** are Pixi `Container`s tagged with `Symbol.for("pxd.slot")` — `getSlot` finds them regardless of label. Independent from label collisions and cross-module-safe.
+
+## Extension points
+
+A single registry of `NodeType { create, assign }` strategies — used by both `build` and `apply`. The default registry is `defaultNodeTypes`; override by passing `nodeTypes` to either call.
+
+**Dispatch order per node:** `create` → `assign` (type-specific fields) → base fields (`x`, `y`, `scale`, …). Base fields run last so explicit transform fields override type-specific side effects (e.g. `sprite.width = N` mutates `scale.x`; a separate `scaleX` on the node still wins).
+
+```ts
+import { defaultNodeTypes, type NodeType } from "./src/index.js";
+
+// Add a custom type — `create` constructs an empty object, `assign` writes
+// type-specific fields. `build` calls create + assign; `apply` calls only assign.
+const SpinButton: NodeType = {
+    create: () => new MySpinButton(),
+    assign: (node, target) => {
+        if (target instanceof MySpinButton) target.setLabel(node.props?.label);
+    },
+};
+
+const nodeTypes = new Map<string, NodeType>([
+    ...defaultNodeTypes,
+    ["SpinButton", SpinButton],
+
+    // Override how 'text' is assigned (e.g. animate instead of set)
+    ["text", {
+        create: defaultNodeTypes.get("text")!.create,
+        assign: (node, target, ctx) => {
+            if (target instanceof Text) gsap.to(target, { text: ctx.readString(node.text), duration: 0.3 });
+        },
+    }],
+]);
+
+build(doc, { resolve, nodeTypes });
+apply(doc, root, { resolve, nodeTypes });
+```
+
+## File layout
+
+```
+libs/pxd/
+├── package.json
+├── tsconfig.json
+└── src/
+    ├── index.ts        — public re-exports
+    ├── types.ts        — vendored PXD schema (Core + Library)
+    ├── validate.ts     — §10 + §15 validation (scene-shape rejected, table-driven specs)
+    ├── decisions.ts    — §3.6 decision-value resolver
+    ├── bindings.ts     — §7.2 {path} substitution
+    ├── context.ts      — NodeType / BuildContext / ApplyContext / Resolvers / mergeRegistry
+    ├── tags.ts         — Symbol.for("pxd.id"), Symbol.for("pxd.slot")
+    ├── nodeTypes.ts    — defaultNodeTypes + drawShape + setAnchorFromNode
+    ├── build.ts        — build() + buildSubtree + applyBaseFields
+    ├── apply.ts        — apply() with label-path walking (lazy mask idMap)
+    ├── find.ts         — find / findAll / requirePath
+    └── slots.ts        — getSlot / mountSlot
+```
+
+## What it supports
+
+- **Profiles:** Core, Library (with transitive prefab composition and §13.2 scope isolation per instance).
+- **Decision values (§3.6):** active-tag set, lexicographic selector validation, declaration-order tie-break.
+- **String bindings (§7.2):** `{path}` substitution, `\{` and `\\` escapes, no rescanning.
+- **Masks (§8):** forward references resolved in two passes; apply rebinds by id against existing tree.
+- **Slots (§4.5):** symbol-tagged containers; `mountSlot` / `getSlot` find them by `slot` field.
+- **Runtime-registered types (§5):** add custom `NodeType { create, patch }` via `options.nodeTypes`.
+
+## What it doesn't do
+
+- **No Scene profile.** Scene-shape documents are rejected with a clear error.
+- **No per-node extension handlers (§9.2).** `extensions` payloads are silently ignored.
+- **No document-level extensions.** Asset/resource manifest loading is the host's concern.
+- **No reactivity.** Bindings resolve once per `build` / `apply`; call `apply` again on change.
+- **No tree → PXD serialization.** One-way only.
+
+## Relationship to `pxd-reader/`
+
+`reference/pxd-reader/` is the canonical reference reader for the PXD spec (Core + Library + Scene, extension handler API, etc.). It's larger and more spec-faithful.
+
+`libs/pxd/` (this) is the practical Pixi-bound library: smaller surface, fewer abstractions, adds `apply` / `find` / `mountSlot` which the reference reader doesn't have. Vendors `types`, `validate`, decision/binding resolvers, and the intrinsic builders from the reference rather than depending on it — so the folder stays self-contained.
+
+## Tests
+
+```bash
+npm test
+```
+
+- `test/fixtures.test.ts` — every `valid/core-*` and `valid/library-*` fixture validates; every `invalid/*` rejects with the right rule; `valid/scene-*` rejected as out-of-scope.
+- `test/build.test.ts` — decisions, bindings, prefab scope, custom builders, rotation, mask wiring.
+- `test/apply.test.ts` — match, missing, type-mismatch, re-resolve decisions/bindings, mask rebind, scene reject.
+- `test/find.test.ts` — dot-path, findAll, requirePath throws.
+- `test/slots.test.ts` — getSlot by symbol, mountSlot adds child, throw on missing slot.

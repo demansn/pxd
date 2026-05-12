@@ -1,0 +1,24 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "prefabs": {
+    "A": {
+      "id": "root",
+      "type": "container",
+      "children": [
+        { "id": "b", "type": "B" }
+      ]
+    },
+    "B": {
+      "id": "root",
+      "type": "container",
+      "children": [
+        { "id": "a", "type": "A" }
+      ]
+    }
+  },
+  "root": {
+    "id": "root",
+    "type": "A"
+  }
+}

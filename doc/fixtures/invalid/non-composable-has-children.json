@@ -1,0 +1,12 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "sprite",
+    "texture": "bg",
+    "children": [
+      { "id": "inside", "type": "text", "text": "nope" }
+    ]
+  }
+}

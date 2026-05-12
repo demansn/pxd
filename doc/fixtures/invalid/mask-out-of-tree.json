@@ -1,0 +1,16 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "target",
+        "type": "sprite",
+        "texture": "panel",
+        "mask": "nonexistent"
+      }
+    ]
+  }
+}

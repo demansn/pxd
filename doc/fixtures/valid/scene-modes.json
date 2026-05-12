@@ -1,0 +1,51 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "profile": "scene",
+  "prefabs": {
+    "Slider.portrait": {
+      "id": "root",
+      "type": "container",
+      "children": [
+        { "id": "track", "type": "sprite", "texture": "slider_v" },
+        { "id": "thumb", "type": "sprite", "texture": "slider_thumb" }
+      ]
+    },
+    "Slider.landscape": {
+      "id": "root",
+      "type": "container",
+      "children": [
+        { "id": "track", "type": "sprite", "texture": "slider_h" },
+        { "id": "thumb", "type": "sprite", "texture": "slider_thumb" }
+      ]
+    }
+  },
+  "scenes": {
+    "Settings": {
+      "modes": {
+        "portrait": {
+          "id": "root",
+          "type": "container",
+          "children": [
+            { "id": "title", "type": "text", "text": "Settings", "style": "h1", "x": 360, "y": 60 },
+            { "id": "volume", "type": "Slider.portrait", "x": 80, "y": 900 }
+          ]
+        },
+        "landscape": {
+          "id": "root",
+          "type": "container",
+          "children": [
+            {
+              "id": "rightPanel",
+              "type": "container",
+              "children": [
+                { "id": "title", "type": "text", "text": "Settings", "style": "h1", "x": 300, "y": 60 },
+                { "id": "volume", "type": "Slider.landscape", "x": 900, "y": 100 }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

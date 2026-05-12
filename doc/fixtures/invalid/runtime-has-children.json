@@ -1,0 +1,18 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "spinBtn",
+        "type": "Button",
+        "props": { "label": "SPIN" },
+        "children": [
+          { "id": "icon", "type": "sprite", "texture": "spin_icon" }
+        ]
+      }
+    ]
+  }
+}
