@@ -23,6 +23,9 @@
       "default": "./pxd.schema.json"
     }
   },
+  "bin": {
+    "pxd": "./dist/src/cli.js"
+  },
   "files": [
     "dist/src",
     "doc/pxd-v1.md",
@@ -33,16 +36,18 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
-    "test": "tsc && node dist/test/fixtures.test.js && node --test dist/test/build.test.js dist/test/apply.test.js dist/test/find.test.js dist/test/slots.test.js dist/test/schema.test.js",
+    "test": "tsc && node dist/test/fixtures.test.js && node --test dist/test/build.test.js dist/test/apply.test.js dist/test/find.test.js dist/test/slots.test.js dist/test/schema.test.js dist/test/cli.test.js",
     "prepack": "npm run build",
     "prepublishOnly": "npm test"
   },
   "peerDependencies": {
     "pixi.js": "^8.7.0"
   },
+  "dependencies": {
+    "ajv": "^8.20.0"
+  },
   "devDependencies": {
     "@types/node": "^25.7.0",
-    "ajv": "^8.20.0",
     "pixi.js": "^8.7.0",
     "typescript": "^5.0.0"
   }
