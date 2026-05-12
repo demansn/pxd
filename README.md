@@ -146,6 +146,10 @@ pxd/
 
 This package is the practical Pixi-bound library: smaller surface, fewer abstractions, adds `apply` / `find` / `mountSlot` which the reference reader doesn't have. Vendors `types`, `validate`, decision/binding resolvers, and the intrinsic node-type implementations from the reference rather than depending on it — so the package stays self-contained.
 
+## JSON Schema
+
+`pxd.schema.json` (JSON Schema draft 2020-12) ships with the package and is available via the `pxd/schema` export. It covers Core and Library levels; Scene documents fail both branches. The schema enforces structural constraints — required fields, type shapes, decision-map patterns, no unknown properties on intrinsic nodes. Semantic-only rules (ID uniqueness, mask resolution, prefab cycles, lexicographic tag ordering, extension subset checks) are deliberately left to `validate()`. Use the schema for editor integration and CI pre-checks; always call `validate()` before passing a document to `build()` or `apply()`.
+
 ## Tests
 
 ```bash

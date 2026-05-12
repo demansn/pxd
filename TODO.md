@@ -33,12 +33,12 @@
 
 ## 4. JSON Schema
 
-- [ ] Добавить `pxd.schema.json`.
-- [ ] Покрыть Core + Library level.
-- [ ] Добавить schema для intrinsic node types.
-- [ ] Добавить schema для decision maps.
-- [ ] Добавить schema для prefabs.
-- [ ] Добавить тесты, что fixtures проходят/падают по schema.
+- [x] Добавить `pxd.schema.json`.
+- [x] Покрыть Core + Library level.
+- [x] Добавить schema для intrinsic node types.
+- [x] Добавить schema для decision maps.
+- [x] Добавить schema для prefabs.
+- [x] Добавить тесты, что fixtures проходят/падают по schema.
 
 ## 5. CLI
 
@@ -66,6 +66,7 @@
 - [ ] `graphics`: проверить все shape cases и ошибки неполных shape fields.
 - [ ] `slot`: реализовать/описать `width` и `height`.
 - [ ] `spine`: либо реализовать через extension/custom type, либо убрать из default intrinsic support.
+- [ ] рассмотреть все другие типы обьектов которые есть в pixi.js 8 и решить, какие поддерживать как intrinsic, а какие через extension/custom type.
 
 ## 8. Extension API
 
@@ -78,10 +79,8 @@
 
 ## 9. Lifecycle для custom node types
 
-- [ ] Добавить минимальные hooks, если нужны: `beforeAssign`, `afterAssign`.
 - [ ] Добавить `destroy`/cleanup hook для будущего reconcile/rebuild.
 - [ ] Задокументировать, что должно жить в `create`, а что в `assign`.
-- [ ] Добавить тесты для hooks.
 
 ## 10. Examples и проверяемые демо
 
@@ -100,7 +99,5 @@
 
 ## 12. Будущее, не минимум
 
-- [ ] Scene level.
 - [ ] Reconcile с добавлением/удалением children.
 - [ ] Tree → PXD serialization.
-- [ ] Producer tooling / Figma exporter.

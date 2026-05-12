@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/demansn/pxd/pxd.schema.json",
+  "title": "PXD v1 Document (Core + Library)",
+  "$comment": "Scene documents fail both oneOf branches — Scene level is out of scope for this library.",
+  "oneOf": [
+    { "$ref": "#/$defs/coreDocument" },
+    { "$ref": "#/$defs/libraryDocument" }
+  ],
+  "$defs": {
+    "decisionString": {
+      "type": "object",
+      "required": ["_"],
+      "properties": {
+        "_": { "type": "string" }
+      },
+      "patternProperties": {
+        "^[^\\s+]+(\\+[^\\s+]+)*$": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "$comment": "Lexicographic sort of multi-tag selectors (§3.6 rule 12) is not expressible in JSON Schema — enforced by validate.ts."
+    },
+    "decisionNumber": {
+      "type": "object",
+      "required": ["_"],
+      "properties": {
+        "_": { "type": "number" }
+      },
+      "patternProperties": {
+        "^[^\\s+]+(\\+[^\\s+]+)*$": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "decisionBoolean": {
+      "type": "object",
+      "required": ["_"],
+      "properties": {
+        "_": { "type": "boolean" }
+      },
+      "patternProperties": {
+        "^[^\\s+]+(\\+[^\\s+]+)*$": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "decidableString": {
+      "anyOf": [
+        { "type": "string" },
+        { "$ref": "#/$defs/decisionString" }
+      ]
+    },
+    "decidableNumber": {
+      "anyOf": [
+        { "type": "number" },
+        { "$ref": "#/$defs/decisionNumber" }
+      ]
+    },
+    "decidableBoolean": {
+      "anyOf": [
+        { "type": "boolean" },
+        { "$ref": "#/$defs/decisionBoolean" }
+      ]
+    },
+    "decidableTint": {
+      "anyOf": [
+        { "type": "string" },
+        { "$ref": "#/$defs/decisionString" },
+        { "type": "number" },
+        { "$ref": "#/$defs/decisionNumber" }
+      ]
+    },
+    "decidableStringOrObject": {
+      "$comment": "anyOf (not oneOf): a decisionString like {_: 'h1'} also satisfies {type: object}, so oneOf would reject it.",
+      "anyOf": [
+        { "type": "string" },
+        { "$ref": "#/$defs/decisionString" },
+        { "type": "object" }
+      ]
+    },
+    "decidableGraphicsShape": {
+      "anyOf": [
+        { "enum": ["rect", "roundRect", "circle", "ellipse", "polygon"] },
+        { "$ref": "#/$defs/decisionString" }
+      ]
+    },
+    "intrinsicTypeName": {
+      "enum": ["container", "sprite", "text", "graphics", "slot", "spine"]
+    },
+    "baseNode": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id":         { "type": "string", "minLength": 1 },
+        "type":       { "type": "string", "minLength": 1 },
+        "label":      { "$ref": "#/$defs/decidableString" },
+        "x":          { "$ref": "#/$defs/decidableNumber" },
+        "y":          { "$ref": "#/$defs/decidableNumber" },
+        "scaleX":     { "$ref": "#/$defs/decidableNumber" },
+        "scaleY":     { "$ref": "#/$defs/decidableNumber" },
+        "rotation":   { "$ref": "#/$defs/decidableNumber" },
+        "alpha":      { "$ref": "#/$defs/decidableNumber" },
+        "zIndex":     { "$ref": "#/$defs/decidableNumber" },
+        "pivotX":     { "$ref": "#/$defs/decidableNumber" },
+        "pivotY":     { "$ref": "#/$defs/decidableNumber" },
+        "visible":    { "$ref": "#/$defs/decidableBoolean" },
+        "mask":       { "type": "string" },
+        "extensions": { "type": "object" }
+      }
+    },
+    "containerNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":     { "const": "container" },
+        "children": { "type": "array", "items": { "$ref": "#/$defs/node" } }
+      },
+      "required": ["type"],
+      "unevaluatedProperties": false
+    },
+    "spriteNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":    { "const": "sprite" },
+        "texture": { "$ref": "#/$defs/decidableString" },
+        "frame":   { "$ref": "#/$defs/decidableString" },
+        "tint":    { "$ref": "#/$defs/decidableTint" },
+        "width":   { "$ref": "#/$defs/decidableNumber" },
+        "height":  { "$ref": "#/$defs/decidableNumber" },
+        "anchorX": { "$ref": "#/$defs/decidableNumber" },
+        "anchorY": { "$ref": "#/$defs/decidableNumber" }
+      },
+      "required": ["type", "texture"],
+      "unevaluatedProperties": false
+    },
+    "textNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":     { "const": "text" },
+        "text":     { "$ref": "#/$defs/decidableString" },
+        "style":    { "$ref": "#/$defs/decidableStringOrObject" },
+        "maxWidth": { "$ref": "#/$defs/decidableNumber" },
+        "fit":      { "$ref": "#/$defs/decidableString" },
+        "anchorX":  { "$ref": "#/$defs/decidableNumber" },
+        "anchorY":  { "$ref": "#/$defs/decidableNumber" }
+      },
+      "required": ["type", "text"],
+      "unevaluatedProperties": false
+    },
+    "graphicsNode": {
+      "allOf": [
+        { "$ref": "#/$defs/baseNode" },
+        {
+          "if": { "properties": { "shape": { "const": "polygon" } } },
+          "then": { "required": ["points"] }
+        },
+        {
+          "if": { "properties": { "shape": { "enum": ["rect", "roundRect", "ellipse"] } } },
+          "then": { "required": ["width", "height"] }
+        },
+        {
+          "if": { "properties": { "shape": { "const": "circle" } } },
+          "then": { "required": ["radius"] }
+        }
+      ],
+      "properties": {
+        "type":        { "const": "graphics" },
+        "shape":       { "$ref": "#/$defs/decidableGraphicsShape" },
+        "width":       { "$ref": "#/$defs/decidableNumber" },
+        "height":      { "$ref": "#/$defs/decidableNumber" },
+        "radius":      { "$ref": "#/$defs/decidableNumber" },
+        "points":      { "type": "array", "items": { "type": "number" } },
+        "fill":        { "$ref": "#/$defs/decidableStringOrObject" },
+        "stroke":      { "$ref": "#/$defs/decidableStringOrObject" },
+        "strokeWidth": { "$ref": "#/$defs/decidableNumber" }
+      },
+      "required": ["type", "shape"],
+      "unevaluatedProperties": false
+    },
+    "slotNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":   { "const": "slot" },
+        "slot":   { "$ref": "#/$defs/decidableString" },
+        "width":  { "$ref": "#/$defs/decidableNumber" },
+        "height": { "$ref": "#/$defs/decidableNumber" }
+      },
+      "required": ["type", "slot"],
+      "unevaluatedProperties": false
+    },
+    "spineNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":      { "const": "spine" },
+        "skeleton":  { "$ref": "#/$defs/decidableString" },
+        "skin":      { "$ref": "#/$defs/decidableString" },
+        "animation": { "$ref": "#/$defs/decidableString" }
+      },
+      "required": ["type", "skeleton"],
+      "unevaluatedProperties": false
+    },
+    "customNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":  { "type": "string", "minLength": 1 },
+        "props": { "type": "object" }
+      },
+      "required": ["type"],
+      "not": {
+        "properties": { "type": { "$ref": "#/$defs/intrinsicTypeName" } },
+        "required": ["type"]
+      },
+      "unevaluatedProperties": false
+    },
+    "node": {
+      "oneOf": [
+        { "$ref": "#/$defs/containerNode" },
+        { "$ref": "#/$defs/spriteNode" },
+        { "$ref": "#/$defs/textNode" },
+        { "$ref": "#/$defs/graphicsNode" },
+        { "$ref": "#/$defs/slotNode" },
+        { "$ref": "#/$defs/spineNode" },
+        { "$ref": "#/$defs/customNode" }
+      ]
+    },
+    "prefabMap": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/node" }
+    },
+    "documentEnvelope": {
+      "type": "object",
+      "required": ["format", "version"],
+      "properties": {
+        "format":             { "const": "pxd" },
+        "version":            { "const": 1 },
+        "level":              { "type": "string" },
+        "extensionsUsed":     { "type": "array", "items": { "type": "string" } },
+        "extensionsRequired": { "type": "array", "items": { "type": "string" } },
+        "extensions":         { "type": "object" }
+      }
+    },
+    "coreDocument": {
+      "allOf": [{ "$ref": "#/$defs/documentEnvelope" }],
+      "properties": {
+        "level": { "enum": ["core"] },
+        "root":  { "$ref": "#/$defs/node" }
+      },
+      "required": ["format", "version", "root"],
+      "unevaluatedProperties": false
+    },
+    "libraryDocument": {
+      "allOf": [{ "$ref": "#/$defs/documentEnvelope" }],
+      "properties": {
+        "level":   { "enum": ["library"] },
+        "root":    { "$ref": "#/$defs/node" },
+        "prefabs": { "$ref": "#/$defs/prefabMap" }
+      },
+      "required": ["format", "version", "root", "prefabs"],
+      "unevaluatedProperties": false
+    }
+  }
+}
