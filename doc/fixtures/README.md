@@ -22,10 +22,11 @@ doc/fixtures/
 | `valid/core-extensions.json` | Extension declared in `extensionsUsed` but not `extensionsRequired`; document MUST load even if the reader does not recognize the extension | §9 |
 | `valid/core-bindings.json` | String bindings (`{locale.title}`, multi-binding, escape `\{`) in `text`, `style`, `texture` fields | §7.2 |
 | `valid/core-decisions.json` | Decision-map values (`{_:100, mobile:50}`, multi-tag `de+mobile`) on `x`, `maxWidth`, `texture`, `width`, `fill` | §3.6 |
+| `valid/core-custom-top-level.json` | Runtime/custom node with top-level custom fields and a decision map | §5, §3.6 |
 | `valid/library-simple.json` | `prefabs` map, prefab instantiated twice, `level: "library"` | §12, §13 |
 | `valid/library-nested.json` | Prefab body references another prefab (transitive composition) | §13, §14 |
 | `valid/scene-modes.json` | Two scene modes, cross-mode identity by stable `id`, `level: "scene"` | §17, §18, §19 |
-| `valid/scene-runtime-type.json` | Runtime-registered type (`Button`) with `props`; no prefabs | §5 |
+| `valid/scene-runtime-type.json` | Scene-shape fixture with a runtime-registered type; rejected by this Core+Library library | §5 |
 
 ## Invalid fixtures
 
@@ -36,7 +37,8 @@ doc/fixtures/
 | `invalid/mask-out-of-tree.json` | `mask` references an `id` that is not in the tree | §10 rule 6 |
 | `invalid/non-composable-has-children.json` | `sprite` carries `children` | §10 rule 8 |
 | `invalid/runtime-has-children.json` | A runtime-registered type carries `children` | §10 rule 9 |
-| `invalid/intrinsic-has-props.json` | An intrinsic type carries `props` | §10 rule 10 |
+| `invalid/intrinsic-has-props.json` | An intrinsic type carries legacy `props` | §10 rule 10 |
+| `invalid/custom-props.json` | Legacy runtime/custom node `props` payload is rejected; use top-level fields | §5 migration |
 | `invalid/decision-unsorted-selector.json` | Decision-map selector `mobile+de` is not lexicographically sorted | §10 rule 12 |
 | `invalid/decision-mixed-types.json` | Decision-map mixes number and string values | §10 rule 13 |
 | `invalid/decision-on-mask.json` | Decision map on the `mask` field (static-only) | §10 rule 14 |

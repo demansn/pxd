@@ -186,11 +186,12 @@ function walk(
     // §10 rules 11–14 — decision-map values
     validateDecisionMaps(node, context);
 
-    // §10 rule 10 — intrinsic nodes MUST NOT have props (§5 rule 5)
-    if (INTRINSIC.has(node.type) && node.props !== undefined) {
+    // §5 migration — `props` was removed from the public node model in 0.x.
+    // Custom/runtime parameters now live as top-level fields and participate in §3.6.
+    if (node.props !== undefined) {
         throw new ValidationError(
             "rule 10",
-            `intrinsic type '${node.type}' on node '${node.id}' must not have 'props'`,
+            `node '${node.id}' must not have 'props'; put custom fields directly on the node`,
         );
     }
 
@@ -200,14 +201,9 @@ function walk(
     const isPrefabRef = !INTRINSIC.has(node.type) && prefabNames.has(node.type);
     const isRuntimeRef = !INTRINSIC.has(node.type) && !prefabNames.has(node.type);
 
-    // §15 rule 19 — prefab references MUST NOT have props or children
+    // §15 rule 19 — prefab references MUST NOT have children.
+    // `props` is rejected globally above; prefab parameters are not part of this item.
     if (isPrefabRef) {
-        if (node.props !== undefined) {
-            throw new ValidationError(
-                "rule 23",
-                `prefab reference '${node.type}' on node '${node.id}' must not have 'props'`,
-            );
-        }
         if (node.children !== undefined) {
             throw new ValidationError(
                 "rule 23",

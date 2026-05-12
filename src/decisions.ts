@@ -15,7 +15,6 @@ export const NON_DECIDABLE_KEYS: ReadonlySet<string> = new Set([
     "mask",
     "children",
     "extensions",
-    "props",
     "points",
 ]);
 
@@ -64,7 +63,7 @@ export function isDecisionMap(v: unknown): boolean {
 
 /**
  * Returns a copy of `node` with all decidable scalar fields resolved against
- * `activeTags`. Structural fields (id, type, mask, children, extensions, props,
+ * `activeTags`. Structural fields (id, type, mask, children, extensions,
  * points) are passed through unchanged.
  */
 export function resolveNodeFields(node: Node, activeTags: ReadonlySet<string>): ResolvedNode {

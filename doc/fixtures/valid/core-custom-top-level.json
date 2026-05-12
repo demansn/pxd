@@ -7,11 +7,10 @@
     "children": [
       {
         "id": "spinBtn",
-        "type": "Button",
-        "text": "SPIN",
-        "children": [
-          { "id": "icon", "type": "sprite", "texture": "spin_icon" }
-        ]
+        "type": "SpinButton",
+        "text": { "_": "SPIN", "mobile": "TAP" },
+        "enabled": true,
+        "variant": "primary"
       }
     ]
   }

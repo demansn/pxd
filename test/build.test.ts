@@ -13,6 +13,7 @@ import { Container } from "pixi.js";
 import { build } from "../src/build.js";
 import type { NodeType, Resolvers } from "../src/context.js";
 import { find, requirePath } from "../src/find.js";
+import { validate, ValidationError } from "../src/validate.js";
 
 const stub: NodeType = { create: () => new Container(), assign: () => {} };
 
@@ -85,30 +86,82 @@ test("build: find(root, dot.path) resolves by label", () => {
     assert.throws(() => requirePath(root, "hud.missing"), /not found/);
 });
 
-test("build: custom node type for runtime-registered type", () => {
+test("build: custom node type receives top-level fields", () => {
     const doc = {
         format: "pxd" as const,
         version: 1 as const,
         root: {
             id: "root",
             type: "container",
-            children: [{ id: "btn", type: "Button", props: { label: "OK" } }],
+            children: [{ id: "btn", type: "Button", text: "OK", enabled: true }],
         },
     };
-    let buttonCalled = 0;
+    let captured: { text?: unknown; enabled?: unknown } | undefined;
     const buttonType: NodeType = {
-        create: () => {
-            buttonCalled++;
-            return new Container();
+        create: () => new Container(),
+        assign: (node) => {
+            captured = { text: node.text, enabled: node.enabled };
         },
-        assign: () => {},
     };
+
     const root = build(doc, {
         resolve: resolveStub,
         nodeTypes: new Map([["Button", buttonType]]),
     });
-    assert.equal(buttonCalled, 1);
+
+    assert.deepEqual(captured, { text: "OK", enabled: true });
     assert.equal(root.children[0].label, "btn");
+});
+
+test("build: custom top-level decision field is resolved before assign", () => {
+    const doc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                {
+                    id: "btn",
+                    type: "Button",
+                    text: { _: "SPIN", mobile: "TAP" },
+                    enabled: { _: false, mobile: true },
+                },
+            ],
+        },
+    };
+    let captured: { text?: unknown; enabled?: unknown } | undefined;
+    const buttonType: NodeType = {
+        create: () => new Container(),
+        assign: (node) => {
+            captured = { text: node.text, enabled: node.enabled };
+        },
+    };
+
+    build(doc, {
+        resolve: resolveStub,
+        activeTags: ["mobile"],
+        nodeTypes: new Map([["Button", buttonType]]),
+    });
+
+    assert.deepEqual(captured, { text: "TAP", enabled: true });
+});
+
+test("validate: custom node props are rejected; use top-level fields", () => {
+    assert.throws(
+        () => validate({
+            format: "pxd",
+            version: 1,
+            root: {
+                id: "root",
+                type: "container",
+                children: [{ id: "btn", type: "Button", props: { text: "OK" } }],
+            },
+        }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 10"
+            && /must not have 'props'/.test(error.message),
+    );
 });
 
 test("build: rotation in degrees → radians (§6)", () => {

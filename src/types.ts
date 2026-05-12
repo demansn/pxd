@@ -131,7 +131,11 @@ export interface SpineNode extends BaseNode {
 
 export interface CustomNode extends BaseNode {
     type: string;
-    props?: Record<string, unknown>;
+    /**
+     * Runtime/custom node fields live directly on the node. Their shape is
+     * owned by the host-provided NodeType implementation.
+     */
+    [field: string]: unknown;
     children?: never;
 }
 
