@@ -4,7 +4,7 @@
  * Matches by label-path (immediate child whose label === pxdChild.label ?? id).
  * Missing nodes silently skip the subtree (optional `onMissing` callback).
  * Type-mismatch is also silent — base fields still apply, type-specific fields
- * are skipped by the per-type `patch`.
+ * are skipped by the per-type `assign`.
  */
 
 import type { Container } from "pixi.js";
@@ -23,7 +23,7 @@ export interface ApplyOptions {
     resolve?: Partial<Resolvers>;
     /** §3.6 active tag set used for this apply call. Defaults to empty. */
     activeTags?: Iterable<string>;
-    /** Additional node types merged onto {@link defaultNodeTypes}. Only `patch` is invoked by apply. */
+    /** Additional node types merged onto {@link defaultNodeTypes}. Only `assign` is invoked by apply. */
     nodeTypes?: ReadonlyMap<string, NodeType>;
     /** Called when a PXD node has no matching Pixi child. Subtree is still skipped. */
     onMissing?: (labelPath: string, nodeId: string) => void;
@@ -31,9 +31,9 @@ export interface ApplyOptions {
 
 const EMPTY_ID_MAP: ReadonlyMap<string, Container> = new Map();
 
-/** Apply a PXD doc to an existing Pixi tree. Returns count of patched nodes. */
+/** Apply a PXD doc to an existing Pixi tree. Returns count of updated nodes. */
 export function apply(doc: unknown, root: Container, options: ApplyOptions = {}): number {
-    // Patch docs may reference mask sources that live in the existing Pixi tree,
+    // Apply docs may reference mask sources that live in the existing Pixi tree,
     // not in the doc itself. Skip §10 rule 6 — masks are resolved against the
     // tree's idMap below.
     const validated = validate(doc, { skipMaskValidation: true });

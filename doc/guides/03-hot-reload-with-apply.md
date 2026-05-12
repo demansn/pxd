@@ -1,6 +1,6 @@
 # Hot reload with `apply`
 
-The killer feature of this library: `apply(doc, root, options)` patches an already-built Pixi tree from an updated JSON. No rebuild, no Container identity loss, no listener re-binding.
+The killer feature of this library: `apply(doc, root, options)` updates an already-built Pixi tree from an updated JSON. No rebuild, no Container identity loss, no listener re-binding.
 
 ## Pattern: dev-time hot reload
 
@@ -19,7 +19,7 @@ import.meta.hot?.accept("./hud.json", (mod) => {
 });
 ```
 
-A designer edits `hud.json` → game patches transforms, textures, text content live.
+A designer edits `hud.json` → game updates transforms, textures, text content live.
 
 ## Pattern: locale / theme swap
 
@@ -39,7 +39,7 @@ Same doc, different tags → all `{path}` bindings and decision-map values re-re
 
 - All base fields (`x/y/scale/rotation/alpha/visible/zIndex`).
 - Type-specific fields via each `NodeType.assign` (texture, text, style, shape draws, ...).
-- Masks — rebound by id against the existing tree (the source can live outside the patch doc, see below).
+- Masks — rebound by id against the existing tree (the source can live outside the apply doc, see below).
 
 ## What `apply` does NOT do
 
@@ -53,7 +53,7 @@ Same doc, different tags → all `{path}` bindings and decision-map values re-re
 
 ## Masks across apply
 
-Inside the patch doc, a node's `mask: "someId"` is resolved against ids already tagged on the live tree (`PXD_ID` symbol). The mask source can live *outside* the patch doc — useful when you patch a small subtree and the mask lives globally.
+Inside the apply doc, a node's `mask: "someId"` is resolved against ids already tagged on the live tree (`PXD_ID` symbol). The mask source can live *outside* the apply doc — useful when you apply a small subtree and the mask lives globally.
 
 ## Custom `assign` overrides for apply
 
@@ -77,11 +77,11 @@ apply(updatedDoc, root, {
 
 Note: `apply` invokes only `assign`, so `create` can be anything (just keep the field — the type wants both).
 
-## Counting patched nodes
+## Counting updated nodes
 
-`apply` returns the number of patched nodes. Useful for sanity checks:
+`apply` returns the number of updated nodes. Useful for sanity checks:
 
 ```ts
 const n = apply(doc, root, { onMissing: log });
-console.log(`patched ${n} nodes`);
+console.log(`updated ${n} nodes`);
 ```

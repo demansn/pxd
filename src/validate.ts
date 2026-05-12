@@ -48,7 +48,7 @@ export interface ValidateOptions {
     /**
      * If true, do NOT enforce §10 rule 6 (mask refs must resolve within tree).
      * Used by `apply()` where mask sources may live in the existing Pixi tree
-     * rather than the patch document.
+     * rather than the apply document.
      */
     skipMaskValidation?: boolean;
 }

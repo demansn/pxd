@@ -4,32 +4,32 @@
 
 ## 1. Упаковка npm-пакета
 
-- [ ] Убрать `"private": true` из `package.json`.
-- [ ] Добавить `license`.
-- [ ] Добавить `repository`.
-- [ ] Добавить `exports` для ESM/import и типов.
-- [ ] Добавить `files`, чтобы публиковались только нужные файлы.
-- [ ] Добавить `clean` script для удаления `dist`.
-- [ ] Сделать `build` через clean rebuild.
-- [ ] Добавить `prepack`/`prepublishOnly`, чтобы пакет собирался перед публикацией.
-- [ ] Проверить `npm pack --dry-run`.
+- [x] Убрать `"private": true` из `package.json`.
+- [x] Добавить `license`.
+- [x] Добавить `repository`.
+- [x] Добавить `exports` для ESM/import и типов.
+- [x] Добавить `files`, чтобы публиковались только нужные файлы.
+- [x] Добавить `clean` script для удаления `dist`.
+- [x] Сделать `build` через clean rebuild.
+- [x] Добавить `prepack`/`prepublishOnly`, чтобы пакет собирался перед публикацией.
+- [x] Проверить `npm pack --dry-run`.
 
 ## 2. Чистые артефакты публикации
 
-- [ ] Не публиковать `node_modules`.
-- [ ] Не публиковать `dist/test`.
-- [ ] Не публиковать stale-файлы из старого `dist`.
-- [ ] Решить, публиковать ли `src` и `test`; если нет — исключить.
-- [ ] Оставить в пакете только runtime build, типы, README, spec/docs/schema.
+- [x] Не публиковать `node_modules`.
+- [x] Не публиковать `dist/test`.
+- [x] Не публиковать stale-файлы из старого `dist`.
+- [x] Решить, публиковать ли `src` и `test`; если нет — исключить.
+- [x] Оставить в пакете только runtime build, типы, README, spec/docs/schema.
 
 ## 3. Синхронизация документации и API
 
-- [ ] Везде заменить старые термины `builders`/`appliers` на `defaultNodeTypes`.
-- [ ] Везде использовать термин `assign`, не `patch`.
-- [ ] Проверить `README.md` на соответствие реальному API.
-- [ ] Проверить guides в `doc/guides/*`.
-- [ ] Проверить examples/reference docs.
-- [ ] Убрать из документации обещания, которые runtime пока не выполняет.
+- [x] Везде заменить старые термины `builders`/`appliers` на `defaultNodeTypes`.
+- [x] Везде использовать термин `assign`, не `patch`.
+- [x] Проверить `README.md` на соответствие реальному API.
+- [x] Проверить guides в `doc/guides/*`.
+- [x] Проверить examples/reference docs.
+- [x] Убрать из документации обещания, которые runtime пока не выполняет.
 
 ## 4. JSON Schema
 

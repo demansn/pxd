@@ -1,9 +1,8 @@
 /**
  * Tree query API by `Container.label` — matches §3.2 label semantics.
  *
- * Path segments are joined with `.` — same idiom as the onearm
- * `BaseContainer.find` and other scene-graph engines. Each segment matches
- * an IMMEDIATE child's label (no deep search inside a segment).
+ * Path segments are joined with `.`. Each segment matches an IMMEDIATE
+ * child's label (no deep search inside a segment).
  *
  *   find(root, "hud.bet.value")  → root.children[label==hud].children[label==bet].children[label==value]
  *

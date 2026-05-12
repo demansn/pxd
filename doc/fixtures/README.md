@@ -7,7 +7,7 @@ Normative specification: `../pxd-v1.md`.
 ## Layout
 
 ```
-libs/pxd/doc/fixtures/
+doc/fixtures/
 ├── valid/       # MUST load without error
 └── invalid/     # MUST be rejected
 ```

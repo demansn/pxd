@@ -100,7 +100,7 @@ apply(updatedDoc, root, {
 
 ## Why `assign` is optional
 
-Some types have no patchable type-specific fields:
+Some types have no assignable type-specific fields:
 - `slot` — passive mount point.
 - Prefab wrappers — fully composed by `create`.
 

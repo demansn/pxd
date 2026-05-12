@@ -132,7 +132,7 @@ function makePrefabType(
     nodeTypes: ReadonlyMap<string, NodeType>,
     options: BuildOptions,
 ): NodeType {
-    // create() delegates back through the full pipeline; no fields to patch.
+    // create() delegates back through the full pipeline; no extra `assign` step needed.
     return {
         create: () => buildSubtree(body, nodeTypes, options),
     };

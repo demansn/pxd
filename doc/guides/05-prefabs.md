@@ -83,7 +83,7 @@ If you want per-instance customization, pass it through the prefab body via deci
 }
 ```
 
-After building from the prefab doc above, you can `apply` a smaller patch doc that overrides just the captions per instance — match by label-path `playBtn.caption`, `settingsBtn.caption`.
+After building from the prefab doc above, you can `apply` a smaller doc that overrides just the captions per instance — match by label-path `playBtn.caption`, `settingsBtn.caption`.
 
 ## Acyclic prefab graph
 

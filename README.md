@@ -11,14 +11,13 @@ Spec: [`doc/pxd-v1.md`](./doc/pxd-v1.md).
 PXD separates **scene configuration** (positions, textures, styles, prefabs) from **scene logic** (state, reactions, animations). This library is the bridge for Pixi.js:
 
 - `build(doc, opts)` — turn a document into a fresh Pixi tree.
-- `apply(doc, root, opts)` — apply a document to an **already-built** Pixi tree (positions, textures, text content, etc. update in place). This is the killer feature: a designer changes a JSON file, your game patches the live tree without rebuilding.
+- `apply(doc, root, opts)` — apply a document to an **already-built** Pixi tree (positions, textures, text content, etc. update in place). This is the killer feature: a designer changes a JSON file, your game updates the live tree without rebuilding.
 - `find(root, "hud.bet.value")` — dot-path lookup by `Container.label`.
 - `mountSlot(root, slotName, content)` — drop external content into named slot nodes.
 
 ## Quickstart
 
 ```bash
-cd libs/pxd
 npm install
 npm test
 ```
@@ -65,7 +64,7 @@ apply(updatedDoc, root, {
 - **`Container.label = node.label ?? node.id`** — load-bearing for find/apply. PXD spec §3.2 makes label the semantic name; if the producer didn't supply one, `id` is used. Path queries always compare against `label`.
 - **Apply matches by label-path with immediate-child lookup.** For each PXD node we look for a child of the current Pixi parent with the same `label` (one hop, not deep search). Missing nodes → `onMissing` callback, then subtree skipped. Structure mismatch never throws.
 - **Type-mismatch is silent.** If PXD says `text` but the live target is `Sprite`, type-specific fields (`text`, `style`) are skipped. Base fields (`x`, `y`, `alpha`, …) still flow through.
-- **Mask in apply** rebinds to the existing tree by `id` (validation rule 6 is relaxed for apply because mask source may live outside the patch doc).
+- **Mask in apply** rebinds to the existing tree by `id` (validation rule 6 is relaxed for apply because mask source may live outside the apply doc).
 - **Slots** are Pixi `Container`s tagged with `Symbol.for("pxd.slot")` — `getSlot` finds them regardless of label. Independent from label collisions and cross-module-safe.
 
 ## Extension points
@@ -106,7 +105,7 @@ apply(doc, root, { resolve, nodeTypes });
 ## File layout
 
 ```
-libs/pxd/
+pxd/
 ├── package.json
 ├── tsconfig.json
 └── src/
@@ -131,7 +130,7 @@ libs/pxd/
 - **String bindings (§7.2):** `{path}` substitution, `\{` and `\\` escapes, no rescanning.
 - **Masks (§8):** forward references resolved in two passes; apply rebinds by id against existing tree.
 - **Slots (§4.5):** symbol-tagged containers; `mountSlot` / `getSlot` find them by `slot` field.
-- **Runtime-registered types (§5):** add custom `NodeType { create, patch }` via `options.nodeTypes`.
+- **Runtime-registered types (§5):** add custom `NodeType { create, assign }` via `options.nodeTypes`.
 
 ## What it doesn't do
 
@@ -145,7 +144,7 @@ libs/pxd/
 
 `reference/pxd-reader/` is the canonical reference reader for the PXD spec (Core + Library + Scene, extension handler API, etc.). It's larger and more spec-faithful.
 
-`libs/pxd/` (this) is the practical Pixi-bound library: smaller surface, fewer abstractions, adds `apply` / `find` / `mountSlot` which the reference reader doesn't have. Vendors `types`, `validate`, decision/binding resolvers, and the intrinsic builders from the reference rather than depending on it — so the folder stays self-contained.
+This package is the practical Pixi-bound library: smaller surface, fewer abstractions, adds `apply` / `find` / `mountSlot` which the reference reader doesn't have. Vendors `types`, `validate`, decision/binding resolvers, and the intrinsic node-type implementations from the reference rather than depending on it — so the package stays self-contained.
 
 ## Tests
 
@@ -154,7 +153,7 @@ npm test
 ```
 
 - `test/fixtures.test.ts` — every `valid/core-*` and `valid/library-*` fixture validates; every `invalid/*` rejects with the right rule; `valid/scene-*` rejected as out-of-scope.
-- `test/build.test.ts` — decisions, bindings, prefab scope, custom builders, rotation, mask wiring.
+- `test/build.test.ts` — decisions, bindings, prefab scope, custom node types, rotation, mask wiring.
 - `test/apply.test.ts` — match, missing, type-mismatch, re-resolve decisions/bindings, mask rebind, scene reject.
 - `test/find.test.ts` — dot-path, findAll, requirePath throws.
 - `test/slots.test.ts` — getSlot by symbol, mountSlot adds child, throw on missing slot.

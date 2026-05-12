@@ -147,7 +147,7 @@ export type Node = IntrinsicNode | CustomNode;
 
 /**
  * Post-§3.6 view of a node — every Decidable<T> field is collapsed to its
- * picked leaf T. Builders and appliers receive nodes of this shape, never raw Decidable.
+ * picked leaf T. NodeTypes' `create`/`assign` receive nodes of this shape, never raw Decidable.
  */
 type Unwrap<T> = T extends DecisionMap<infer U>
     ? U
@@ -156,5 +156,5 @@ type Unwrap<T> = T extends DecisionMap<infer U>
     : T;
 export type Resolved<N> = { [K in keyof N]: Unwrap<N[K]> };
 
-/** A node with all decision values pre-resolved. Builders/appliers see this. */
+/** A node with all decision values pre-resolved. NodeTypes' `create`/`assign` see this. */
 export type ResolvedNode = Resolved<Node> & Record<string, unknown>;

@@ -1,5 +1,5 @@
 /**
- * `libs/pxd` — minimal PXD v1 (Core+Library) library for Pixi.js.
+ * `pxd` — minimal PXD v1 (Core+Library) library for Pixi.js.
  *
  * Public API:
  *   - `build(doc, options)`              — validate + construct fresh Pixi tree
@@ -12,7 +12,7 @@
  *
  * Power-user / extension surface:
  *   - `defaultNodeTypes`                  — default type registry (one Map for build+apply)
- *   - `NodeType`                          — strategy interface: { create, patch }
+ *   - `NodeType`                          — strategy interface: { create, assign }
  *   - `validate` / `ValidationError`      — explicit validation
  *   - `resolveDecisionValue` / `resolveBindings` — §3.6 / §7.2 primitives
  *

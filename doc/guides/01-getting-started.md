@@ -1,6 +1,6 @@
 # Getting started
 
-A PXD document is JSON that describes a Pixi container tree: positions, textures, text, styles, prefabs. This library reads that JSON and builds a real Pixi tree, then lets you walk it by name and patch it without rebuilding.
+A PXD document is JSON that describes a Pixi container tree: positions, textures, text, styles, prefabs. This library reads that JSON and builds a real Pixi tree, then lets you walk it by name and update it from a new document without rebuilding.
 
 ## Minimal document
 
@@ -51,7 +51,7 @@ title.text = "Hello, player";
 ## Next steps
 
 - [Custom node types](./02-custom-node-types.md) — register your own widgets (SpinButton, ProgressBar).
-- [Hot reload with apply](./03-hot-reload-with-apply.md) — patch a live tree from updated JSON.
+- [Hot reload with apply](./03-hot-reload-with-apply.md) — update a live tree from a new JSON doc.
 - [Decisions and bindings](./04-decisions-and-bindings.md) — mobile/desktop layouts, locale swaps.
 - [Prefabs](./05-prefabs.md) — reusable subtrees.
 - [Slots](./06-slots.md) — mount external content (Reels, custom containers).
