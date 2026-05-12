@@ -42,11 +42,11 @@
 
 ## 5. CLI
 
-- [ ] Добавить `bin` entry в `package.json`.
-- [ ] Реализовать `pxd validate <file>`.
-- [ ] Реализовать понятные ошибки validation/schema.
-- [ ] Добавить `pxd inspect <file>` для краткого дерева/статистики.
-- [ ] Добавить CLI tests.
+- [x] Добавить `bin` entry в `package.json`.
+- [x] Реализовать `pxd validate <file>`.
+- [x] Реализовать понятные ошибки validation/schema.
+- [x] Добавить `pxd inspect <file>` для краткого дерева/статистики.
+- [x] Добавить CLI tests.
 
 ## 6. Чёткая семантика `apply()`
 
