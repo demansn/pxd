@@ -1,6 +1,6 @@
 # `pxd` — minimal PXD library for Pixi.js
 
-A tiny Pixi.js library that reads PXD v1 documents (Core + Library levels), builds Pixi `Container` trees, walks them, and applies documents to existing trees as stylesheets. The whole library is ~1100 LOC of TypeScript and ships zero dependencies beyond `pixi.js`.
+A tiny Pixi.js library that reads PXD v1 documents (Core + Library levels), builds Pixi `Container` trees, walks them, and applies documents to existing trees as stylesheets. The whole library is small TypeScript with `pixi.js` as a peer dependency and Ajv for CLI schema validation.
 
 Spec: [`doc/pxd-v1.md`](./doc/pxd-v1.md).
 
@@ -21,6 +21,19 @@ PXD separates **scene configuration** (positions, textures, styles, prefabs) fro
 npm install
 npm test
 ```
+
+## CLI
+
+The package exposes a `pxd` binary:
+
+```bash
+pxd validate path/to/document.json
+pxd inspect path/to/document.json
+```
+
+`pxd validate` parses JSON, checks `pxd.schema.json` for structural errors, then runs the semantic validator (`validate()`) for PXD rules such as duplicate ids, mask resolution, prefab cycles, and extension requirements.
+
+`pxd inspect` validates the document first, then prints shape, node/type counts, prefab counts, and a short tree. It does not build Pixi objects or resolve textures/styles.
 
 ## Public API
 
@@ -161,3 +174,4 @@ npm test
 - `test/apply.test.ts` — match, missing, type-mismatch, re-resolve decisions/bindings, mask rebind, scene reject.
 - `test/find.test.ts` — dot-path, findAll, requirePath throws.
 - `test/slots.test.ts` — getSlot by symbol, mountSlot adds child, throw on missing slot.
+- `test/cli.test.ts` — `pxd validate`, validation/schema error formatting, `pxd inspect`, and bin metadata.
