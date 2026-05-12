@@ -34,11 +34,10 @@ class SpinButton extends Container {
 
 const SpinButtonType: NodeType = {
     create: () => new SpinButton(),
-    assign: (node, target) => {
+    assign: (node, target, ctx) => {
         if (!(target instanceof SpinButton)) return;
-        const props = node.props as { label?: string; enabled?: boolean } | undefined;
-        if (typeof props?.label === "string") target.setLabel(props.label);
-        if (typeof props?.enabled === "boolean") target.setEnabled(props.enabled);
+        if (typeof node.text === "string") target.setLabel(ctx.readString(node.text));
+        if (typeof node.enabled === "boolean") target.setEnabled(node.enabled);
     },
 };
 
@@ -58,15 +57,26 @@ Matching doc fragment:
     "id": "spinBtn",
     "type": "SpinButton",
     "x": 600, "y": 540,
-    "props": { "label": "SPIN", "enabled": true }
+    "text": { "_": "SPIN", "mobile": "TAP" },
+    "enabled": true
 }
 ```
 
+## Custom fields
+
+Custom node fields are plain top-level node fields. The library reserves base/structural fields (`id`, `type`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `extensions`, and for now `children`). Do not reuse those names for custom semantics.
+
+Scalar custom fields may be decision maps. `NodeType.create` and `NodeType.assign` receive the resolved value, just like intrinsic node types.
+
+### Migration note: no `props`
+
+Older drafts used `{ "props": { "text": "SPIN" } }` for runtime/custom nodes. Custom parameters now live directly on the node: `{ "text": "SPIN" }`. The `props` field is rejected so custom scalar fields can participate in the same decision-resolution pipeline as built-in fields.
+
 ## Runtime types must not have children
 
-Per PXD spec (§5 rule 4): runtime-registered types are leaves — their children belong inside the implementation, not the doc. The validator rejects `children` on a non-intrinsic non-prefab type.
+Runtime-registered types are leaves for now — their children belong inside the implementation, not the doc. The validator rejects `children` on a non-intrinsic non-prefab type.
 
-If you need a composite custom type with doc-defined children, use a **prefab** instead — see [05-prefabs.md](./05-prefabs.md).
+If you need a composite custom type with doc-defined children today, use a **prefab** instead — see [05-prefabs.md](./05-prefabs.md).
 
 ## Overriding an intrinsic type
 

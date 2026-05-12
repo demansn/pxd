@@ -138,7 +138,7 @@ Every node in a tree has the following shape:
 | `children` | Node[] | no | — | Child nodes, in z-order |
 | `extensions` | object | no | — | Per-node extension payloads keyed by identifier |
 
-Runtime-registered nodes (§5) carry an additional `props` field; intrinsic nodes MUST NOT.
+Runtime/custom node parameters (§5) live directly on the node as top-level fields not reserved by the base model. The legacy `props` payload is rejected in this 0.x library version.
 
 ### 3.2 Identity: `id` and `label`
 
@@ -172,7 +172,7 @@ The base node does NOT define `anchorX`/`anchorY` or `pivotX`/`pivotY`. Pixi.js 
 
 Only composable node types may carry `children`. In Core, the only composable intrinsic type is `container`. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`, `spine`) MUST NOT have `children`.
 
-Runtime-registered nodes (§5) MUST NOT have `children` in Core; they receive their construction inputs through `props` (§5). A future level MAY relax this.
+Runtime-registered nodes (§5) MUST NOT have `children` in Core. Their construction inputs live as top-level custom fields (§5). A future level MAY relax this.
 
 Prefab references (Part II) are composable according to their prefab's root.
 
@@ -214,7 +214,7 @@ Decision values are NOT permitted on:
 - `id`, `type` — identity must be static.
 - `mask` — mask target must be statically known for forward-reference resolution.
 - `children` — structural variation belongs in `modes` (Part III), not in decision values.
-- `extensions`, `props` — these are payload bags, not scalars.
+- `extensions` — extension payloads are objects, not scalar decision values.
 - Inline style/fill/stroke objects — when the field carries an object form, decision values cannot wrap the object. Producers SHOULD use a style id (string) and let the style resolver vary the underlying object.
 
 **Bindings (§7.2) interaction.** A decision map's leaf string values MAY themselves contain bindings; resolution order is: pick decision leaf → resolve bindings → hand to typed resolver. Bindings inside a selector key (the tag string itself) are NOT supported.
@@ -362,13 +362,14 @@ A Core reader is not required to ship Spine support; see §11 conformance.
 
 ## 5. Runtime-registered types
 
-A `type` value that is not an intrinsic name and is not a prefab name (Part II) is resolved against the runtime's type registry. If the runtime recognizes the name, it constructs the corresponding object using the node's `props` as construction parameters.
+A `type` value that is not an intrinsic name and is not a prefab name (Part II) is resolved against the runtime's type registry. If the runtime recognizes the name, it constructs the corresponding object using custom top-level fields on the node as construction/update parameters.
 
 ```json
 {
   "id": "spinButton",
   "type": "Button",
-  "props": { "label": "SPIN" }
+  "text": "SPIN",
+  "enabled": true
 }
 ```
 
@@ -376,9 +377,9 @@ Rules:
 
 1. Runtime-registered type names MUST NOT collide with intrinsic type names.
 2. Runtime-registered type names MUST NOT collide with prefab names (Part II).
-3. `props` is opaque to this specification — its shape is owned by the runtime.
-4. A runtime-registered node MUST NOT carry `children` (§3.5). All inputs flow through `props`.
-5. Intrinsic nodes MUST NOT carry `props` (`props` is reserved for runtime-registered types).
+3. Custom top-level fields are opaque to this specification — their shape is owned by the runtime.
+4. A runtime-registered node MUST NOT carry `children` (§3.5). Inputs flow through custom top-level fields.
+5. The legacy `props` payload is rejected in this 0.x library version; use top-level custom fields instead.
 6. If a reader does not recognize a non-intrinsic `type`, it MUST reject the document (§10 rule 17), unless an extension governs the case explicitly.
 
 ---
@@ -517,11 +518,11 @@ A valid core-shape document satisfies all of the following:
 7. Intrinsic node types satisfy their type-specific required-field constraints (§4).
 8. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`, `spine`) MUST NOT have `children`.
 9. Runtime-registered nodes MUST NOT have `children` (§3.5, §5 rule 4).
-10. Intrinsic nodes MUST NOT have `props` (§5 rule 5).
+10. Nodes MUST NOT have legacy `props`; put custom fields directly on runtime/custom nodes (§5 rule 5).
 11. Every decision-map value (§3.6) has a `"_"` key.
 12. Every selector key in a decision-map has tags joined by `+`, lexicographically sorted, with no whitespace, no empty segments. The selector `""` is forbidden.
 13. Every value inside one decision-map (default plus all selector branches) has the same JSON primitive type (number, string, or boolean).
-14. Decision-map values do NOT appear on `id`, `type`, `mask`, `children`, `extensions`, `props`.
+14. Decision-map values do NOT appear on `id`, `type`, `mask`, `children`, `extensions`, or `points`. Custom scalar top-level fields MAY be decision maps.
 15. `extensionsRequired` ⊆ `extensionsUsed`, when both are present.
 16. Every identifier in `extensionsRequired` is recognized by the reader.
 17. Every non-intrinsic `type` value is a runtime-registered type known to the reader. (In core-shape documents there are no prefabs.)
@@ -610,15 +611,15 @@ Each prefab is a complete node tree — the same shape as a `root`. A prefab def
 When a reader encounters a node `type` that is not an intrinsic name, it resolves in this order:
 
 1. `prefabs[type]` — if matched, instantiate the prefab tree.
-2. Runtime-registered type — if matched, construct via the runtime using `props`.
+2. Runtime-registered type — if matched, construct via the runtime using custom top-level fields.
 3. Otherwise — reject the document (§15 rule 22).
 
 ### 13.1 Reference node rules
 
 A node whose `type` resolves to a prefab is a *prefab reference*. The following apply:
 
-- The reference MUST NOT carry `props`. `props` is reserved for runtime-registered types; parametrized prefabs are deferred to a future version (§24).
 - The reference MUST NOT carry `children`. Children come from the prefab body; a different structure requires a different prefab.
+- The legacy `props` payload is rejected globally; prefab references are not parameterized in this version.
 - The reference MAY carry base node fields: `id`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `extensions`. These apply to the instantiated prefab root.
 
 ### 13.2 Identity of instantiated nodes
@@ -643,7 +644,7 @@ A valid library-shape document satisfies all Core validation rules (§10) plus:
 20. Within each prefab tree, all `id` values are unique. (Trees are independent: the same `id` MAY appear in `root` and in every prefab tree; that is not a collision.)
 21. The directed prefab-to-prefab reference graph is acyclic.
 22. Every non-intrinsic `type` value resolves either to a prefab name in `prefabs` or to a runtime-registered type known to the reader.
-23. No prefab reference carries `props` or `children`.
+23. No prefab reference carries `children`; `props` is rejected globally (§10 rule 10).
 24. If `level` is present and equals `"library"`, the document has both `root` and `prefabs` and does not contain `scenes`.
 
 ---
@@ -810,7 +811,7 @@ A scene-shape document exercising prefabs, multiple modes, cross-mode identity, 
               "children": [
                 { "id": "title",  "type": "text",             "text": "Settings", "style": "h1", "x": 300, "y": 60 },
                 { "id": "volume", "type": "Slider.landscape", "x": 900, "y": 100 },
-                { "id": "spin",   "type": "Button",           "props": { "label": "SPIN" } }
+                { "id": "spin",   "type": "Button",           "text": "SPIN" }
               ]
             }
           ]
@@ -825,7 +826,7 @@ Notes:
 
 - `volume` has a stable `id` across `portrait` and `landscape` (§19). A reader MAY use this to preserve the slider value on rotation.
 - `Slider.portrait` and `Slider.landscape` are distinct prefabs, not variants of one prefab. They have different textures and different intended axes.
-- `Button` is a runtime-registered type. `props` is meaningful here.
+- `Button` is a runtime-registered type. Its custom `text` field is interpreted by the host-provided node type.
 - `VENDOR_physics` is declared in `extensionsUsed` but not in `extensionsRequired`, so a reader that does not recognize it MUST load the document and simply ignore any `VENDOR_physics` payloads that appear.
 
 ---
@@ -845,7 +846,7 @@ The shape of this specification follows established practice.
 
 Deliberately excluded from v1 to keep the specification minimal. Listed here to mark expected growth points:
 
-- **Parametrized prefabs.** v1 forbids `props` on prefab references. A future version may define a contract for passing parameters from the reference to the prefab body.
+- **Parametrized prefabs.** v1 keeps prefab references simple and unparameterized. A future version may define a contract for passing parameters from the reference to the prefab body.
 - **Mode diff operations.** v1 stores a full tree per mode. A future version may add an optional patch mechanism (add / remove / replace / move) for scenes with many modes and small diffs.
 - **Promoted widget types.** Common widgets (button, check box, scroll container) are runtime-registered types in v1. A future version may promote some of them to intrinsic types.
 - **Behavior and binding layer.** Runtime behaviors, controllers, data bindings, and flow logic are out of scope in v1 and expected to live outside this schema or inside a dedicated extension.

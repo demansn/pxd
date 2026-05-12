@@ -54,8 +54,10 @@ const root = build(doc, {
     },
     activeTags: ["en", "mobile"],
     nodeTypes: new Map([["SpinButton", {
-        create: (n) => new MySpinButton(n.props),
-        assign: (n, t) => t.setLabel(n.props?.label),
+        create: () => new MySpinButton(),
+        assign: (n, t, ctx) => {
+            if (typeof n.text === "string") t.setLabel(ctx.readString(n.text));
+        },
     }]]),
 });
 
@@ -93,8 +95,10 @@ import { defaultNodeTypes, type NodeType } from "./src/index.js";
 // type-specific fields. `build` calls create + assign; `apply` calls only assign.
 const SpinButton: NodeType = {
     create: () => new MySpinButton(),
-    assign: (node, target) => {
-        if (target instanceof MySpinButton) target.setLabel(node.props?.label);
+    assign: (node, target, ctx) => {
+        if (!(target instanceof MySpinButton)) return;
+        if (typeof node.text === "string") target.setLabel(ctx.readString(node.text));
+        if (typeof node.enabled === "boolean") target.setEnabled(node.enabled);
     },
 };
 
@@ -114,6 +118,10 @@ const nodeTypes = new Map<string, NodeType>([
 build(doc, { resolve, nodeTypes });
 apply(doc, root, { resolve, nodeTypes });
 ```
+
+### Migration note: no `props`
+
+Older drafts used `{ "props": { "text": "SPIN" } }` for runtime/custom nodes. Custom parameters now live directly on the node: `{ "text": "SPIN" }`. The `props` field is rejected so custom scalar fields can participate in the same decision-resolution pipeline as built-in fields.
 
 ## File layout
 

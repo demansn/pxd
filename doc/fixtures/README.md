@@ -45,7 +45,7 @@ doc/fixtures/
 | `invalid/required-not-in-used.json` | `extensionsRequired` contains an id absent from `extensionsUsed` | §10 rule 15 |
 | `invalid/extension-required-unsupported.json` | `extensionsRequired` contains an id not supported by the reader | §10 rule 16 |
 | `invalid/prefab-cycle.json` | Prefab `A` references `B` which references `A` | §15 rule 21 |
-| `invalid/prefab-ref-with-props.json` | A prefab reference carries `props` | §15 rule 23 |
+| `invalid/prefab-ref-with-props.json` | A prefab reference carries legacy `props` (rejected globally) | §10 rule 10 |
 | `invalid/prefab-ref-with-children.json` | A prefab reference carries `children` | §15 rule 23 |
 | `invalid/mixed-root-and-scenes.json` | Document has both `root` and `scenes` | §20 rule 28 |
 | `invalid/empty-modes.json` | Scene has an empty `modes` object | §20 rule 26 |

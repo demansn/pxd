@@ -13,7 +13,8 @@
               "type": "Button",
               "x": 400,
               "y": 500,
-              "props": { "label": "SPIN", "variant": "primary" }
+              "text": "SPIN",
+              "variant": "primary"
             }
           ]
         }

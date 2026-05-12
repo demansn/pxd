@@ -40,15 +40,14 @@ Both instances of `Button.primary` above expand to a subtree with `id: "bg"` and
 
 ## Restrictions on prefab references
 
-Per §15 rule 19, a prefab reference node MUST NOT carry `props` or `children`:
+A prefab reference node MUST NOT carry `children`. The old `props` payload is no longer part of the node model; custom parameters live directly on custom/runtime nodes, and prefab references remain simple references plus base fields.
 
 ```json
 // VALID
 { "id": "playBtn", "type": "Button.primary", "x": 100 }
 
-// INVALID — rejected by validator (rule 23)
+// INVALID — rejected by validator/schema: prefab refs are not parameterized
 { "id": "playBtn", "type": "Button.primary", "children": [...] }
-{ "id": "playBtn", "type": "Button.primary", "props": { "label": "Play" } }
 ```
 
 If you want per-instance customization, pass it through the prefab body via decision values + bindings, or override on apply.
