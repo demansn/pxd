@@ -150,7 +150,6 @@
         "text":     { "$ref": "#/$defs/decidableString" },
         "style":    { "$ref": "#/$defs/decidableStringOrObject" },
         "maxWidth": { "$ref": "#/$defs/decidableNumber" },
-        "fit":      { "$ref": "#/$defs/decidableString" },
         "anchorX":  { "$ref": "#/$defs/decidableNumber" },
         "anchorY":  { "$ref": "#/$defs/decidableNumber" }
       },

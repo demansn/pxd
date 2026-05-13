@@ -282,9 +282,10 @@ A raster image node. There is no separate `image` type.
 | `text` | string | yes | — | Text content |
 | `style` | string/object | no | — | Style identifier (preferred) or inline style object |
 | `maxWidth` | number | no | — | Maximum display width constraint |
-| `fit` | string | no | — | Fit policy when `maxWidth` is set, e.g. `"shrink"` |
 | `anchorX` | number | no | 0 | Anchor X in [0, 1] |
 | `anchorY` | number | no | 0 | Anchor Y in [0, 1] |
+
+`maxWidth` maps to Pixi Text word wrapping (`wordWrap` + `wordWrapWidth`). This lightweight reader does not define text auto-fit/shrink behavior; implement shrink-to-fit by overriding the `text` node type if your runtime needs it.
 
 Inline style objects are not constrained by this specification; Pixi.js text style fields evolve across versions. Producers SHOULD prefer string identifiers resolved by the runtime.
 

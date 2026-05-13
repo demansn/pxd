@@ -89,7 +89,6 @@ export interface TextNode extends BaseNode {
     /** String form is Decidable; inline object form is NOT (§3.6 scope). */
     style?: Decidable<string> | Record<string, unknown>;
     maxWidth?: Decidable<number>;
-    fit?: Decidable<string>;
     anchorX?: Decidable<number>;
     anchorY?: Decidable<number>;
     children?: never;

@@ -38,6 +38,7 @@ doc/fixtures/
 | `invalid/mask-out-of-tree.json` | `mask` references an `id` that is not in the tree | §10 rule 6 |
 | `invalid/non-composable-has-children.json` | `sprite` carries `children` | §10 rule 8 |
 | `invalid/sprite-frame-removed.json` | Sprite uses removed `frame`; encode final atlas subtexture in `texture` instead | §4.2 |
+| `invalid/text-fit-removed.json` | Text uses removed `fit`; shrink policies belong in custom node types | §4.3 |
 | `invalid/intrinsic-has-props.json` | An intrinsic type carries legacy `props` | §10 rule 10 |
 | `invalid/custom-props.json` | Legacy runtime/custom node `props` payload is rejected; use top-level fields | §5 migration |
 | `invalid/decision-unsorted-selector.json` | Decision-map selector `mobile+de` is not lexicographically sorted | §10 rule 12 |

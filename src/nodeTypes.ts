@@ -77,6 +77,12 @@ function resolveTextStyle(node: ResolvedNode, ctx: AssignContext): object | unde
     return undefined;
 }
 
+function applyTextMaxWidth(node: ResolvedNode, target: Text): void {
+    if (typeof node.maxWidth !== "number") return;
+    target.style.wordWrap = true;
+    target.style.wordWrapWidth = node.maxWidth;
+}
+
 const text: NodeType = {
     create: () => new Text(),
     assign: (node, target, ctx) => {
@@ -86,7 +92,7 @@ const text: NodeType = {
         }
         const style = resolveTextStyle(node, ctx);
         if (style) Object.assign(target.style, style);
-        if (typeof node.maxWidth === "number") target.style.wordWrapWidth = node.maxWidth;
+        applyTextMaxWidth(node, target);
         setAnchorFromNode(target, node);
     },
 };

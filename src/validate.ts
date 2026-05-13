@@ -323,7 +323,7 @@ const COMMON_NODE_FIELDS = [
 const intrinsicAllowedFields: Record<string, ReadonlySet<string>> = {
     container: new Set([...COMMON_NODE_FIELDS, "pivotX", "pivotY", "children"]),
     sprite: new Set([...COMMON_NODE_FIELDS, "texture", "tint", "width", "height", "anchorX", "anchorY"]),
-    text: new Set([...COMMON_NODE_FIELDS, "text", "style", "maxWidth", "fit", "anchorX", "anchorY"]),
+    text: new Set([...COMMON_NODE_FIELDS, "text", "style", "maxWidth", "anchorX", "anchorY"]),
     graphics: new Set([...COMMON_NODE_FIELDS, "shape", "width", "height", "radius", "points", "fill", "stroke", "strokeWidth"]),
     slot: new Set([...COMMON_NODE_FIELDS, "slot", "width", "height"]),
     spine: new Set([...COMMON_NODE_FIELDS, "skeleton", "skin", "animation"]),

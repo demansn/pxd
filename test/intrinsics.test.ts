@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Container, Sprite, Texture } from "pixi.js";
+import { Container, Sprite, Text, Texture } from "pixi.js";
 
 import { build } from "../src/build.js";
 import type { Resolvers } from "../src/context.js";
@@ -8,6 +8,31 @@ import { find } from "../src/find.js";
 import { getSlot } from "../src/slots.js";
 
 const resolveStub: Resolvers = { texture: () => ({}) as never };
+
+class FakeCanvasRenderingContext2D {
+    font = "";
+    letterSpacing = "0px";
+
+    measureText(value: string): TextMetrics {
+        return {
+            width: value.length * 10,
+            actualBoundingBoxAscent: 10,
+            actualBoundingBoxDescent: 2,
+            fontBoundingBoxAscent: 10,
+            fontBoundingBoxDescent: 2,
+        } as TextMetrics;
+    }
+}
+
+function installTextCanvasShim(): void {
+    const globals = globalThis as unknown as Record<string, unknown>;
+    globals.CanvasRenderingContext2D ??= FakeCanvasRenderingContext2D;
+    globals.document ??= {
+        createElement: () => ({
+            getContext: () => new FakeCanvasRenderingContext2D(),
+        }),
+    };
+}
 
 test("intrinsic container: applies base fields and pivot fields", () => {
     const root = build({
@@ -114,4 +139,36 @@ test("intrinsic sprite: explicit scale base fields override width and height sid
     assert.ok(root instanceof Sprite);
     assert.equal(root.scale.x, 2);
     assert.equal(root.scale.y, 3);
+});
+
+test("intrinsic text: applies text, resolved style, maxWidth wrapping, and anchor", () => {
+    installTextCanvasShim();
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "title",
+            type: "text",
+            text: "Hello {player}",
+            style: "titleStyle",
+            maxWidth: 180,
+            anchorX: 0.5,
+            anchorY: 1,
+        },
+    }, {
+        resolve: {
+            texture: () => Texture.EMPTY,
+            binding: (path) => path === "player" ? "Ada" : `[${path}]`,
+            style: (id) => id === "titleStyle" ? { fontSize: 32, fill: "#ffffff" } : undefined,
+        },
+    });
+
+    assert.ok(root instanceof Text);
+    assert.equal(root.text, "Hello Ada");
+    assert.equal(root.style.fontSize, 32);
+    assert.equal(root.style.fill, "#ffffff");
+    assert.equal(root.style.wordWrap, true);
+    assert.equal(root.style.wordWrapWidth, 180);
+    assert.equal(root.anchor.x, 0.5);
+    assert.equal(root.anchor.y, 1);
 });

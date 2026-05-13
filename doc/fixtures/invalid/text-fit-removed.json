@@ -1,0 +1,11 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "title",
+    "type": "text",
+    "text": "Hello",
+    "maxWidth": 320,
+    "fit": "shrink"
+  }
+}

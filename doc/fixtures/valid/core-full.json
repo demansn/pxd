@@ -31,8 +31,7 @@
         "x": 400,
         "y": 220,
         "anchorX": 0.5,
-        "maxWidth": 600,
-        "fit": "shrink"
+        "maxWidth": 600
       },
       {
         "id": "boardSlot",
