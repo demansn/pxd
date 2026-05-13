@@ -382,7 +382,7 @@ String values in a document fall into two reader-resolved categories: opaque ide
 
 ### 7.1 Asset references
 
-Fields such as `texture`, `skeleton`, and `style` are opaque string identifiers. The specification does not define:
+Fields such as `texture` and `style` are opaque string identifiers. Custom/runtime nodes may define additional opaque identifiers. The specification does not define:
 
 - how identifiers resolve to concrete files,
 - an asset manifest format,

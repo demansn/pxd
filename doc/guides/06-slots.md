@@ -61,7 +61,7 @@ mountSlot(root, "Board.cascade", boardContainer);
 
 ## Sizing a slot
 
-PXD doesn't auto-size the mounted content. The slot Container has `width`/`height` from the doc only if you set them — otherwise it's an empty Container with size 0. Common patterns:
+PXD doesn't auto-size the mounted content. The slot Container preserves declared `width`/`height` even while empty if you set them — otherwise it's an empty Container with size 0. Common patterns:
 
 - Read `width`/`height` off the slot to size your mounted child:
   ```ts

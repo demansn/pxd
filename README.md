@@ -85,7 +85,7 @@ apply(updatedDoc, root, {
 
 ## Extension points
 
-A single registry of `NodeType { create, assign }` strategies — used by both `build` and `apply`. The default registry is `defaultNodeTypes`; override by passing `nodeTypes` to either call.
+A single registry of `NodeType { create, assign }` strategies — used by both `build` and `apply`. The default registry is `defaultNodeTypes` for the strict built-ins (`container`, `sprite`, `text`, `graphics`, `slot`); override by passing `nodeTypes` to either call. Engine-specific objects such as Spine belong here as custom node types, not in the intrinsic set.
 
 Custom node fields live directly on the node. Reserved structural/base fields are `id`, `type`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `children`, and `extensions`; do not reuse those names for custom semantics. `children` is structural: the library builds/applies it, not your `assign` function.
 
@@ -161,6 +161,7 @@ pxd/
 - **No Scene level.** Scene-shape documents are rejected with a clear error.
 - **No per-node extension handlers (§9.2).** `extensions` payloads are silently ignored.
 - **No document-level extensions.** Asset/resource manifest loading is the host's concern.
+- **No built-in Spine runtime.** Register Spine/game objects as custom `nodeTypes` so the host owns the dependency and field semantics.
 - **No reactivity.** Bindings resolve once per `build` / `apply`; call `apply` again on change.
 - **No tree → PXD serialization.** One-way only.
 
@@ -182,6 +183,7 @@ npm test
 
 - `test/fixtures.test.ts` — every `valid/core-*` and `valid/library-*` fixture validates; every `invalid/*` rejects with the right rule; `valid/scene-*` rejected as out-of-scope.
 - `test/build.test.ts` — decisions, bindings, prefab scope, custom node types, rotation, mask wiring.
+- `test/intrinsics.test.ts` — strict built-in Pixi semantics for container/slot/sprite/text/graphics and custom Spine registration.
 - `test/apply.test.ts` — match, missing, type-mismatch, re-resolve decisions/bindings, mask rebind, scene reject.
 - `test/find.test.ts` — dot-path, findAll, requirePath throws.
 - `test/slots.test.ts` — getSlot by symbol, mountSlot adds child, throw on missing slot.
