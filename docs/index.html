@@ -393,8 +393,28 @@ if (mount) mount.addChild(reelsOverlay);</code></pre>
                 <p>Slots do not auto-size mounted content. If you declare <code>width</code> / <code>height</code>, read those values from the slot and scale your host-owned content yourself.</p>
                 <p>See the <a href="#example-slots">slots example</a>.</p>
             </section>
-            <section id="cli"><h2>CLI</h2><p>TODO — Task 8.</p></section>
-            <section id="not-included"><h2>What's not included</h2><p>TODO — Task 8.</p></section>
+            <section id="cli">
+                <h2>CLI</h2>
+                <p>The package exposes a <code>pxd</code> binary.</p>
+<pre><code class="language-bash">pxd validate path/to/document.json
+pxd inspect path/to/document.json</code></pre>
+                <p><code>pxd validate</code> parses the JSON, checks <code>pxd.schema.json</code> for structural errors, then runs the semantic validator (<code>validate()</code>) for rules such as duplicate ids, mask resolution, prefab cycles, and extension requirements.</p>
+                <p><code>pxd inspect</code> validates the document first, then prints shape, node/type counts, prefab counts, and a short tree. It does not build Pixi objects or resolve textures/styles.</p>
+            </section>
+
+            <section id="not-included">
+                <h2>What's not included</h2>
+                <p>These are intentionally absent. They are not promised in any current version and are not partially shipped under a hidden flag.</p>
+                <ul>
+                    <li><strong>No Scene level.</strong> Scene-shape documents are rejected with a clear error.</li>
+                    <li><strong>No <code>apply</code> full-reset / reconcile mode.</strong> <code>apply</code> is patch-only. A future <code>mode: "full"</code> is on the roadmap; do not depend on it.</li>
+                    <li><strong>No add/remove of children by <code>apply</code>.</strong> Structural changes require a rebuild.</li>
+                    <li><strong>No extension handler API (§9.2).</strong> Per-node <code>extensions</code> payloads are silently ignored. Document-level extensions are not loaded.</li>
+                    <li><strong>No reactivity.</strong> Bindings resolve once per <code>build</code> / <code>apply</code> call; call <code>apply</code> again when state changes.</li>
+                    <li><strong>No tree → PXD serialization.</strong> One-way only.</li>
+                    <li><strong>No built-in Spine, button, or engine widgets.</strong> Register them as custom <code>nodeTypes</code>.</li>
+                </ul>
+            </section>
 
             <section id="examples">
                 <h2>Examples</h2>
