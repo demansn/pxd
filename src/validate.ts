@@ -17,9 +17,28 @@ export class ValidationError extends Error {
 }
 
 /** Intrinsic type names (§4). */
-const INTRINSIC = new Set(["container", "sprite", "nineSliceSprite", "text", "graphics", "slot"]);
+const INTRINSIC = new Set([
+    "container",
+    "sprite",
+    "nineSliceSprite",
+    "tilingSprite",
+    "animatedSprite",
+    "text",
+    "bitmapText",
+    "graphics",
+    "slot",
+]);
 /** Intrinsic types that MUST NOT have children (§10 rule 8). */
-const NON_COMPOSABLE = new Set(["sprite", "nineSliceSprite", "text", "graphics", "slot"]);
+const NON_COMPOSABLE = new Set([
+    "sprite",
+    "nineSliceSprite",
+    "tilingSprite",
+    "animatedSprite",
+    "text",
+    "bitmapText",
+    "graphics",
+    "slot",
+]);
 
 /**
  * Extension identifiers this reader implementation supports.
@@ -335,7 +354,36 @@ const intrinsicAllowedFields: Record<string, ReadonlySet<string>> = {
         "anchorX",
         "anchorY",
     ]),
+    tilingSprite: new Set([
+        ...COMMON_NODE_FIELDS,
+        "texture",
+        "width",
+        "height",
+        "tilePositionX",
+        "tilePositionY",
+        "tileScaleX",
+        "tileScaleY",
+        "tileRotation",
+        "applyAnchorToTexture",
+        "anchorX",
+        "anchorY",
+    ]),
+    animatedSprite: new Set([
+        ...COMMON_NODE_FIELDS,
+        "textures",
+        "tint",
+        "width",
+        "height",
+        "anchorX",
+        "anchorY",
+        "animationSpeed",
+        "loop",
+        "autoUpdate",
+        "updateAnchor",
+        "playing",
+    ]),
     text: new Set([...COMMON_NODE_FIELDS, "text", "style", "maxWidth", "anchorX", "anchorY"]),
+    bitmapText: new Set([...COMMON_NODE_FIELDS, "text", "style", "maxWidth", "anchorX", "anchorY"]),
     graphics: new Set([...COMMON_NODE_FIELDS, "shape", "width", "height", "radius", "points", "fill", "stroke", "strokeWidth"]),
     slot: new Set([...COMMON_NODE_FIELDS, "slot", "width", "height"]),
 };
@@ -346,6 +394,11 @@ const isString: FieldCheck = (x) => typeof x === "string";
 const isNonEmptyStr: FieldCheck = (x) => typeof x === "string" && x.length > 0;
 const isNumber: FieldCheck = (x) => typeof x === "number";
 const isArray: FieldCheck = Array.isArray;
+const isBoolean: FieldCheck = (x) => typeof x === "boolean";
+const isStringOrNumber: FieldCheck = (x) => typeof x === "string" || typeof x === "number";
+const isNonEmptyStringArray: FieldCheck = (x) => Array.isArray(x)
+    && x.length > 0
+    && x.every(isNonEmptyStr);
 
 /**
  * A field value passes if it satisfies `leaf`, or it's a decision-map whose
@@ -367,7 +420,10 @@ interface FieldSpec {
 const intrinsicSpecs: Record<string, FieldSpec[]> = {
     sprite: [{ name: "texture", check: isNonEmptyStr, label: "string" }],
     nineSliceSprite: [{ name: "texture", check: isNonEmptyStr, label: "string" }],
+    tilingSprite: [{ name: "texture", check: isNonEmptyStr, label: "string" }],
+    animatedSprite: [{ name: "textures", check: isNonEmptyStringArray, label: "non-empty string array" }],
     text: [{ name: "text", check: isString, label: "string" }],
+    bitmapText: [{ name: "text", check: isString, label: "string" }],
     slot: [{ name: "slot", check: isNonEmptyStr, label: "string" }],
 };
 
@@ -382,7 +438,37 @@ const optionalIntrinsicSpecs: Record<string, FieldSpec[]> = {
         { name: "anchorX", check: isNumber, label: "number" },
         { name: "anchorY", check: isNumber, label: "number" },
     ],
+    tilingSprite: [
+        { name: "width", check: isNumber, label: "number" },
+        { name: "height", check: isNumber, label: "number" },
+        { name: "tilePositionX", check: isNumber, label: "number" },
+        { name: "tilePositionY", check: isNumber, label: "number" },
+        { name: "tileScaleX", check: isNumber, label: "number" },
+        { name: "tileScaleY", check: isNumber, label: "number" },
+        { name: "tileRotation", check: isNumber, label: "number" },
+        { name: "applyAnchorToTexture", check: isBoolean, label: "boolean" },
+        { name: "anchorX", check: isNumber, label: "number" },
+        { name: "anchorY", check: isNumber, label: "number" },
+    ],
+    animatedSprite: [
+        { name: "tint", check: isStringOrNumber, label: "string or number" },
+        { name: "width", check: isNumber, label: "number" },
+        { name: "height", check: isNumber, label: "number" },
+        { name: "anchorX", check: isNumber, label: "number" },
+        { name: "anchorY", check: isNumber, label: "number" },
+        { name: "animationSpeed", check: isNumber, label: "number" },
+        { name: "loop", check: isBoolean, label: "boolean" },
+        { name: "autoUpdate", check: isBoolean, label: "boolean" },
+        { name: "updateAnchor", check: isBoolean, label: "boolean" },
+        { name: "playing", check: isBoolean, label: "boolean" },
+    ],
     text: [{ name: "style", check: isString, label: "string" }],
+    bitmapText: [
+        { name: "style", check: isString, label: "string" },
+        { name: "maxWidth", check: isNumber, label: "number" },
+        { name: "anchorX", check: isNumber, label: "number" },
+        { name: "anchorY", check: isNumber, label: "number" },
+    ],
     graphics: [
         { name: "fill", check: isString, label: "string" },
         { name: "stroke", check: isString, label: "string" },

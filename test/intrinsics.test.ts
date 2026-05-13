@@ -464,6 +464,50 @@ test("validate: graphics rejects shape-specific no-op fields for literal shapes"
     );
 });
 
+test("validate: expanded intrinsics reject missing required fields", () => {
+    assert.throws(
+        () => validate({ format: "pxd", version: 1, root: { id: "bad", type: "tilingSprite" } }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 7"
+            && /tilingSprite node 'bad' must have string 'texture'/.test(error.message),
+    );
+    assert.throws(
+        () => validate({ format: "pxd", version: 1, root: { id: "bad", type: "animatedSprite" } }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 7"
+            && /animatedSprite node 'bad' must have non-empty string array 'textures'/.test(error.message),
+    );
+    assert.throws(
+        () => validate({ format: "pxd", version: 1, root: { id: "bad", type: "bitmapText" } }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 7"
+            && /bitmapText node 'bad' must have string 'text'/.test(error.message),
+    );
+});
+
+test("validate: expanded intrinsics reject unknown fields and children", () => {
+    assert.throws(
+        () => validate({
+            format: "pxd",
+            version: 1,
+            root: { id: "bad", type: "tilingSprite", texture: "bg", children: [] },
+        }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 8"
+            && /intrinsic type 'tilingSprite'.*must not have 'children'/.test(error.message),
+    );
+    assert.throws(
+        () => validate({
+            format: "pxd",
+            version: 1,
+            root: { id: "bad", type: "bitmapText", text: "Hi", fit: "shrink" },
+        }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 7"
+            && /intrinsic bitmapText node 'bad' has unknown field 'fit'/.test(error.message),
+    );
+});
+
 test("spine is a custom node type, not an intrinsic with required skeleton fields", () => {
     let capturedAnimation: unknown;
     const spineType: NodeType = {
