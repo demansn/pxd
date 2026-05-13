@@ -69,9 +69,64 @@
         </aside>
 
         <main>
-            <section id="overview"><h2>Overview</h2><p>TODO — authored in Task 4.</p></section>
-            <section id="mental-model"><h2>Mental model</h2><p>TODO — Task 4.</p></section>
-            <section id="quickstart"><h2>Quickstart</h2><p>TODO — Task 4.</p></section>
+            <section id="overview">
+                <h2>Overview</h2>
+                <p class="lede"><code>pxd</code> is a tiny Pixi.js library that reads PXD v1 documents (Core + Library), builds <code>Container</code> trees, walks them by label, and applies updated documents to live trees as patches.</p>
+                <p>PXD separates <em>scene configuration</em> (positions, textures, styles, prefabs) from <em>scene logic</em> (state, animations, reactions). This library is the Pixi-side bridge: hand it a JSON document, get a Pixi tree back; hand it an updated JSON document, get a live in-place patch.</p>
+                <p>Spec: <a href="../doc/pxd-v1.md"><code>doc/pxd-v1.md</code></a>. The library implements Core and Library levels; Scene-shape documents are rejected.</p>
+            </section>
+
+            <section id="mental-model">
+                <h2>Mental model</h2>
+                <p>The public surface is intentionally small:</p>
+                <ul>
+                    <li><code>build(doc, options)</code> — make a fresh Pixi tree from a document.</li>
+                    <li><code>apply(doc, root, options)</code> — patch an existing Pixi tree from a document.</li>
+                    <li><code>find(root, "a.b.c")</code> / <code>findAll</code> / <code>requirePath</code> — dot-path lookup by <code>Container.label</code>.</li>
+                    <li><code>getSlot(root, name)</code> / <code>mountSlot</code> — symbol-tagged mount points for host-owned content.</li>
+                    <li><code>validate(doc)</code> — semantic check (called automatically by <code>build</code>).</li>
+                </ul>
+                <p>Everything else is an extension hook, not a separate concept. There is exactly one extension mechanism: the <code>nodeTypes</code> registry of <code>{ create, assign }</code> strategies. Both <code>build</code> and <code>apply</code> use the same registry, so a single <code>assign</code> handles the initial build and any subsequent hot reloads. There are no extension handlers, no extension API, no reactivity — just one map.</p>
+                <div class="callout">
+                    <strong>Dispatch order per node:</strong> <code>create</code> → <code>assign</code> (type-specific fields) → base fields (<code>x</code>, <code>y</code>, <code>scale</code>, …). Base fields run last, so explicit transforms always override side effects of <code>assign</code>.
+                </div>
+            </section>
+
+            <section id="quickstart">
+                <h2>Quickstart</h2>
+                <p>Install:</p>
+<pre><code class="language-bash">npm install pxd pixi.js</code></pre>
+                <p>Minimal document:</p>
+<pre><code class="language-json">{
+    "format": "pxd",
+    "version": 1,
+    "root": {
+        "id": "root",
+        "type": "container",
+        "children": [
+            { "id": "title", "type": "text", "text": "Hello", "x": 100, "y": 40 },
+            { "id": "logo",  "type": "sprite", "texture": "logo_main" }
+        ]
+    }
+}</code></pre>
+                <p>Build a tree:</p>
+<pre><code class="language-ts">import { Application, Assets, Text } from "pixi.js";
+import { build, requirePath } from "pxd";
+import doc from "./hud.json";
+
+const app = new Application();
+await app.init({ resizeTo: window });
+document.body.appendChild(app.canvas);
+
+const root = build(doc, {
+    resolve: { texture: (id) => Assets.get(id) },
+});
+app.stage.addChild(root);
+
+const title = requirePath&lt;Text&gt;(root, "title");
+title.text = "Hello, player";</code></pre>
+                <p><code>Container.label</code> on every built node equals <code>node.label ?? node.id</code> — that's what <code>find</code> and <code>requirePath</code> match against.</p>
+            </section>
             <section id="api"><h2>Public API</h2><p>TODO — Task 5.</p></section>
             <section id="reserved-base-fields"><h2>Reserved base fields</h2><p>TODO — Task 5.</p></section>
             <section id="apply-patch-semantics"><h2>apply() patch semantics</h2><p>TODO — Task 5.</p></section>
