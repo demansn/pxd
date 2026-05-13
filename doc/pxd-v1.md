@@ -172,9 +172,9 @@ The base node does NOT define `anchorX`/`anchorY` or `pivotX`/`pivotY`. Pixi.js 
 
 Only composable node types may carry `children`. In Core, the only composable intrinsic type is `container`. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`, `spine`) MUST NOT have `children`.
 
-Runtime-registered nodes (§5) MUST NOT have `children` in Core. Their construction inputs live as top-level custom fields (§5). A future level MAY relax this.
+Runtime/custom nodes (§5) MAY carry `children`; the created runtime object must be a container-like object that can receive children. The reader builds/applies those children after the custom node's `create`/`assign` and base fields.
 
-Prefab references (Part II) are composable according to their prefab's root.
+Prefab references (Part II) are different: their structure comes from the prefab body, so the reference node itself MUST NOT carry `children`.
 
 ### 3.6 Decision values
 
@@ -378,7 +378,7 @@ Rules:
 1. Runtime-registered type names MUST NOT collide with intrinsic type names.
 2. Runtime-registered type names MUST NOT collide with prefab names (Part II).
 3. Custom top-level fields are opaque to this specification — their shape is owned by the runtime.
-4. A runtime-registered node MUST NOT carry `children` (§3.5). Inputs flow through custom top-level fields.
+4. A runtime-registered node MAY carry `children`; traversal is handled by the reader after `create`, `assign`, and base fields.
 5. The legacy `props` payload is rejected in this 0.x library version; use top-level custom fields instead.
 6. If a reader does not recognize a non-intrinsic `type`, it MUST reject the document (§10 rule 17), unless an extension governs the case explicitly.
 
@@ -517,7 +517,7 @@ A valid core-shape document satisfies all of the following:
 6. Every `mask` value is the `id` of a node in the same tree.
 7. Intrinsic node types satisfy their type-specific required-field constraints (§4).
 8. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`, `spine`) MUST NOT have `children`.
-9. Runtime-registered nodes MUST NOT have `children` (§3.5, §5 rule 4).
+9. Runtime/custom nodes MAY have `children`; prefab references are checked separately in §15.
 10. Nodes MUST NOT have legacy `props`; put custom fields directly on runtime/custom nodes (§5 rule 5).
 11. Every decision-map value (§3.6) has a `"_"` key.
 12. Every selector key in a decision-map has tags joined by `+`, lexicographically sorted, with no whitespace, no empty segments. The selector `""` is forbidden.
@@ -618,7 +618,7 @@ When a reader encounters a node `type` that is not an intrinsic name, it resolve
 
 A node whose `type` resolves to a prefab is a *prefab reference*. The following apply:
 
-- The reference MUST NOT carry `children`. Children come from the prefab body; a different structure requires a different prefab.
+- The reference MUST NOT carry `children`. Children come from the prefab body; a different structure requires a different prefab. This restriction does not apply to runtime/custom node types.
 - The legacy `props` payload is rejected globally; prefab references are not parameterized in this version.
 - The reference MAY carry base node fields: `id`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `extensions`. These apply to the instantiated prefab root.
 

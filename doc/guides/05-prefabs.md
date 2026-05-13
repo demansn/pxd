@@ -40,7 +40,7 @@ Both instances of `Button.primary` above expand to a subtree with `id: "bg"` and
 
 ## Restrictions on prefab references
 
-A prefab reference node MUST NOT carry `children`. The old `props` payload is no longer part of the node model; custom parameters live directly on custom/runtime nodes, and prefab references remain simple references plus base fields.
+A prefab reference node MUST NOT carry `children`. Custom/runtime nodes can be composable, but prefab references are not custom nodes; their structure comes from the prefab body. The old `props` payload is no longer part of the node model; custom parameters live directly on custom/runtime nodes, and prefab references remain simple references plus base fields.
 
 ```json
 // VALID

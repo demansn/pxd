@@ -64,7 +64,7 @@ Matching doc fragment:
 
 ## Custom fields
 
-Custom node fields are plain top-level node fields. The library reserves base/structural fields (`id`, `type`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `extensions`, and for now `children`). Do not reuse those names for custom semantics.
+Custom node fields are plain top-level node fields. The library reserves base/structural fields (`id`, `type`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `children`, `extensions`). Do not reuse those names for custom semantics. `children` is owned by the library traversal pipeline.
 
 Scalar custom fields may be decision maps. `NodeType.create` and `NodeType.assign` receive the resolved value, just like intrinsic node types.
 
@@ -72,11 +72,22 @@ Scalar custom fields may be decision maps. `NodeType.create` and `NodeType.assig
 
 Older drafts used `{ "props": { "text": "SPIN" } }` for runtime/custom nodes. Custom parameters now live directly on the node: `{ "text": "SPIN" }`. The `props` field is rejected so custom scalar fields can participate in the same decision-resolution pipeline as built-in fields.
 
-## Runtime types must not have children
+## Custom nodes can have document-defined children
 
-Runtime-registered types are leaves for now — their children belong inside the implementation, not the doc. The validator rejects `children` on a non-intrinsic non-prefab type.
+Custom/runtime nodes are composable Pixi `Container`s. `build()` creates the custom node, runs its `assign`, applies base fields, then builds and adds its `children`. `apply()` runs the custom `assign`, applies base fields, then walks child label-paths exactly like it does for `container` nodes.
 
-If you need a composite custom type with doc-defined children today, use a **prefab** instead — see [05-prefabs.md](./05-prefabs.md).
+```json
+{
+    "id": "panel",
+    "type": "Panel",
+    "title": "Menu",
+    "children": [
+        { "id": "caption", "type": "text", "text": "PLAY" }
+    ]
+}
+```
+
+Your `NodeType` should return a `Container` or subclass capable of receiving children. Prefab references remain different: they are references to prefab bodies and still cannot carry `children` on the reference node.
 
 ## Overriding an intrinsic type
 

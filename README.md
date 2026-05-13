@@ -86,6 +86,8 @@ apply(updatedDoc, root, {
 
 A single registry of `NodeType { create, assign }` strategies — used by both `build` and `apply`. The default registry is `defaultNodeTypes`; override by passing `nodeTypes` to either call.
 
+Custom node fields live directly on the node. Reserved structural/base fields are `id`, `type`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `children`, and `extensions`; do not reuse those names for custom semantics. `children` is structural: the library builds/applies it, not your `assign` function.
+
 **Dispatch order per node:** `create` → `assign` (type-specific fields) → base fields (`x`, `y`, `scale`, …). Base fields run last so explicit transform fields override type-specific side effects (e.g. `sprite.width = N` mutates `scale.x`; a separate `scaleX` on the node still wins).
 
 ```ts
@@ -151,7 +153,7 @@ pxd/
 - **String bindings (§7.2):** `{path}` substitution, `\{` and `\\` escapes, no rescanning.
 - **Masks (§8):** forward references resolved in two passes; apply rebinds by id against existing tree.
 - **Slots (§4.5):** symbol-tagged containers; `mountSlot` / `getSlot` find them by `slot` field.
-- **Runtime-registered types (§5):** add custom `NodeType { create, assign }` via `options.nodeTypes`.
+- **Runtime-registered/custom types (§5):** add custom `NodeType { create, assign }` via `options.nodeTypes`; custom nodes may carry document-defined `children` and are traversed like containers.
 
 ## What it doesn't do
 
