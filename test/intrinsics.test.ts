@@ -1,6 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Container, NineSliceSprite, Sprite, Text, Texture, type Graphics } from "pixi.js";
+import {
+    AnimatedSprite,
+    BitmapText,
+    Container,
+    NineSliceSprite,
+    Sprite,
+    Text,
+    Texture,
+    TilingSprite,
+    type Graphics,
+} from "pixi.js";
 
 import { build } from "../src/build.js";
 import type { NodeType, Resolvers } from "../src/context.js";
@@ -214,6 +224,101 @@ test("intrinsic nineSliceSprite: resolves decisions and bindings before texture 
     assert.equal(root.width, 160);
 });
 
+test("intrinsic tilingSprite: applies texture, area, tile transform, and anchor", () => {
+    const texture = Texture.WHITE;
+    const calls: string[] = [];
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "bg",
+            type: "tilingSprite",
+            texture: "patterns/checker_{theme}",
+            width: 800,
+            height: 600,
+            tilePositionX: 12,
+            tilePositionY: 24,
+            tileScaleX: 2,
+            tileScaleY: 3,
+            tileRotation: 90,
+            applyAnchorToTexture: true,
+            anchorX: 0.5,
+            anchorY: 0.25,
+        },
+    }, {
+        resolve: {
+            texture: (id) => {
+                calls.push(id);
+                return texture;
+            },
+            binding: (path) => path === "theme" ? "dark" : `[${path}]`,
+        },
+    });
+
+    assert.ok(root instanceof TilingSprite);
+    assert.deepEqual(calls, ["patterns/checker_dark"]);
+    assert.equal(root.texture, texture);
+    assert.equal(root.width, 800);
+    assert.equal(root.height, 600);
+    assert.equal(root.tilePosition.x, 12);
+    assert.equal(root.tilePosition.y, 24);
+    assert.equal(root.tileScale.x, 2);
+    assert.equal(root.tileScale.y, 3);
+    assert.ok(Math.abs(root.tileRotation - Math.PI / 2) < 1e-9);
+    assert.equal(root.applyAnchorToTexture, true);
+    assert.equal(root.anchor.x, 0.5);
+    assert.equal(root.anchor.y, 0.25);
+});
+
+test("intrinsic animatedSprite: applies textures, playback fields, size, tint, and anchor", () => {
+    const frames = [Texture.WHITE, Texture.EMPTY];
+    const calls: string[] = [];
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "hero",
+            type: "animatedSprite",
+            textures: ["hero/{state}/0", "hero/{state}/1"],
+            animationSpeed: 0.25,
+            loop: false,
+            autoUpdate: false,
+            updateAnchor: true,
+            playing: true,
+            tint: "#00ff00",
+            width: 64,
+            height: 32,
+            anchorX: 0.5,
+            anchorY: 1,
+        },
+    }, {
+        resolve: {
+            texture: (id) => {
+                calls.push(id);
+                return frames[calls.length - 1] ?? Texture.EMPTY;
+            },
+            binding: (path) => path === "state" ? "walk" : `[${path}]`,
+        },
+    });
+
+    assert.ok(root instanceof AnimatedSprite);
+    assert.deepEqual(calls, ["hero/walk/0", "hero/walk/1"]);
+    assert.equal(root.totalFrames, 2);
+    assert.equal(root.animationSpeed, 0.25);
+    assert.equal(root.loop, false);
+    assert.equal(root.autoUpdate, false);
+    assert.equal(root.updateAnchor, true);
+    assert.equal(root.playing, true);
+    assert.equal(root.tint, 0x00ff00);
+    assert.equal(root.width, 64);
+    assert.equal(root.height, 32);
+    assert.equal(root.anchor.x, 0.5);
+    assert.equal(root.anchor.y, 1);
+    root.stop();
+});
+
 test("intrinsic text: applies text, resolved style, maxWidth wrapping, and anchor", () => {
     installTextCanvasShim();
     const root = build({
@@ -244,6 +349,42 @@ test("intrinsic text: applies text, resolved style, maxWidth wrapping, and ancho
     assert.equal(root.style.wordWrapWidth, 180);
     assert.equal(root.anchor.x, 0.5);
     assert.equal(root.anchor.y, 1);
+});
+
+test("intrinsic bitmapText: applies text, resolved style, maxWidth wrapping, and anchor", () => {
+    installTextCanvasShim();
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "score",
+            type: "bitmapText",
+            text: "Score: {score}",
+            style: "scoreStyle",
+            maxWidth: 240,
+            anchorX: 1,
+            anchorY: 0.5,
+        },
+    }, {
+        resolve: {
+            texture: () => Texture.EMPTY,
+            binding: (path) => path === "score" ? "1200" : `[${path}]`,
+            style: (id) => id === "scoreStyle"
+                ? { fontFamily: "Arial", fontSize: 32, fill: "#ffff00" }
+                : undefined,
+        },
+    });
+
+    assert.ok(root instanceof BitmapText);
+    assert.equal(root.text, "Score: 1200");
+    assert.equal(root.style.fontFamily, "Arial");
+    assert.equal(root.style.fontSize, 32);
+    assert.equal(root.style.fill, "#ffff00");
+    assert.equal(root.style.wordWrap, true);
+    assert.equal(root.style.wordWrapWidth, 240);
+    assert.equal(root.anchor.x, 1);
+    assert.equal(root.anchor.y, 0.5);
 });
 
 function makeGraphicsRecorder(): { graphics: Graphics; calls: unknown[][] } {
