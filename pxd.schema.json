@@ -68,6 +68,11 @@
         { "$ref": "#/$defs/decisionNumber" }
       ]
     },
+    "textureIdArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
     "decidableGraphicsShape": {
       "anyOf": [
         { "enum": ["rect", "roundRect", "circle", "ellipse", "polygon"] },
@@ -89,7 +94,7 @@
       ]
     },
     "intrinsicTypeName": {
-      "enum": ["container", "sprite", "nineSliceSprite", "text", "graphics", "slot"]
+      "enum": ["container", "sprite", "nineSliceSprite", "tilingSprite", "animatedSprite", "text", "bitmapText", "graphics", "slot"]
     },
     "baseNode": {
       "type": "object",
@@ -152,10 +157,61 @@
       "required": ["type", "texture"],
       "unevaluatedProperties": false
     },
+    "tilingSpriteNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":                 { "const": "tilingSprite" },
+        "texture":              { "$ref": "#/$defs/decidableString" },
+        "width":                { "$ref": "#/$defs/decidableNumber" },
+        "height":               { "$ref": "#/$defs/decidableNumber" },
+        "tilePositionX":        { "$ref": "#/$defs/decidableNumber" },
+        "tilePositionY":        { "$ref": "#/$defs/decidableNumber" },
+        "tileScaleX":           { "$ref": "#/$defs/decidableNumber" },
+        "tileScaleY":           { "$ref": "#/$defs/decidableNumber" },
+        "tileRotation":         { "$ref": "#/$defs/decidableNumber" },
+        "applyAnchorToTexture": { "$ref": "#/$defs/decidableBoolean" },
+        "anchorX":              { "$ref": "#/$defs/decidableNumber" },
+        "anchorY":              { "$ref": "#/$defs/decidableNumber" }
+      },
+      "required": ["type", "texture"],
+      "unevaluatedProperties": false
+    },
+    "animatedSpriteNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":           { "const": "animatedSprite" },
+        "textures":       { "$ref": "#/$defs/textureIdArray" },
+        "tint":           { "$ref": "#/$defs/decidableTint" },
+        "width":          { "$ref": "#/$defs/decidableNumber" },
+        "height":         { "$ref": "#/$defs/decidableNumber" },
+        "anchorX":        { "$ref": "#/$defs/decidableNumber" },
+        "anchorY":        { "$ref": "#/$defs/decidableNumber" },
+        "animationSpeed": { "$ref": "#/$defs/decidableNumber" },
+        "loop":           { "$ref": "#/$defs/decidableBoolean" },
+        "autoUpdate":     { "$ref": "#/$defs/decidableBoolean" },
+        "updateAnchor":   { "$ref": "#/$defs/decidableBoolean" },
+        "playing":        { "$ref": "#/$defs/decidableBoolean" }
+      },
+      "required": ["type", "textures"],
+      "unevaluatedProperties": false
+    },
     "textNode": {
       "allOf": [{ "$ref": "#/$defs/baseNode" }],
       "properties": {
         "type":     { "const": "text" },
+        "text":     { "$ref": "#/$defs/decidableString" },
+        "style":    { "$ref": "#/$defs/decidableString" },
+        "maxWidth": { "$ref": "#/$defs/decidableNumber" },
+        "anchorX":  { "$ref": "#/$defs/decidableNumber" },
+        "anchorY":  { "$ref": "#/$defs/decidableNumber" }
+      },
+      "required": ["type", "text"],
+      "unevaluatedProperties": false
+    },
+    "bitmapTextNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":     { "const": "bitmapText" },
         "text":     { "$ref": "#/$defs/decidableString" },
         "style":    { "$ref": "#/$defs/decidableString" },
         "maxWidth": { "$ref": "#/$defs/decidableNumber" },
@@ -249,7 +305,10 @@
         { "$ref": "#/$defs/containerNode" },
         { "$ref": "#/$defs/spriteNode" },
         { "$ref": "#/$defs/nineSliceSpriteNode" },
+        { "$ref": "#/$defs/tilingSpriteNode" },
+        { "$ref": "#/$defs/animatedSpriteNode" },
         { "$ref": "#/$defs/textNode" },
+        { "$ref": "#/$defs/bitmapTextNode" },
         { "$ref": "#/$defs/graphicsNode" },
         { "$ref": "#/$defs/slotNode" },
         { "$ref": "#/$defs/customNode" }
