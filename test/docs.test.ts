@@ -4,22 +4,20 @@ import { resolve } from "node:path";
 import { describe, it } from "node:test";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
-const indexPath = resolve(repoRoot, "docs/index.html");
+const readmePath = resolve(repoRoot, "README.md");
 
-const REQUIRED_SECTION_IDS = [
-    "overview",
-    "mental-model",
-    "quickstart",
-    "api",
-    "reserved-base-fields",
-    "apply-patch-semantics",
-    "custom-node-types",
-    "decisions-and-bindings",
-    "prefabs",
-    "slots",
-    "cli",
-    "not-included",
-    "examples",
+const REQUIRED_SECTIONS = [
+    "## Install",
+    "## API",
+    "## Base fields",
+    "## apply()",
+    "## Custom node types",
+    "## Decisions and bindings",
+    "## Prefabs",
+    "## Slots",
+    "## CLI",
+    "## Examples",
+    "## Development",
 ];
 
 const EXAMPLES = [
@@ -32,38 +30,24 @@ const EXAMPLES = [
     "decisions-bindings",
 ];
 
-describe("docs site", () => {
-    it("ships docs/index.html", () => {
-        assert.equal(existsSync(indexPath), true, "docs/index.html missing");
+describe("docs", () => {
+    it("ships README.md", () => {
+        assert.equal(existsSync(readmePath), true, "README.md missing");
     });
 
-    it("declares every required section id", () => {
-        const html = readFileSync(indexPath, "utf8");
-        for (const id of REQUIRED_SECTION_IDS) {
-            assert.ok(
-                html.includes(`id="${id}"`),
-                `docs/index.html must contain <section id="${id}">`,
-            );
+    it("contains every required section heading", () => {
+        const md = readFileSync(readmePath, "utf8");
+        for (const heading of REQUIRED_SECTIONS) {
+            assert.ok(md.includes(heading), `README.md must contain "${heading}"`);
         }
     });
 
-    it("embeds a canvas mount point for every example", () => {
-        const html = readFileSync(indexPath, "utf8");
+    it("links every example folder", () => {
+        const md = readFileSync(readmePath, "utf8");
         for (const name of EXAMPLES) {
             assert.ok(
-                html.includes(`data-demo="${name}"`),
-                `docs/index.html must contain a canvas with data-demo="${name}"`,
-            );
-        }
-    });
-
-    it("exposes mountDemo from every example preview", async () => {
-        for (const name of EXAMPLES) {
-            const mod = await import(`../examples/${name}/preview.js`);
-            assert.equal(
-                typeof mod.mountDemo,
-                "function",
-                `examples/${name}/preview.ts must export mountDemo(target)`,
+                md.includes(`examples/${name}`),
+                `README.md must reference examples/${name}`,
             );
         }
     });

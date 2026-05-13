@@ -1,7 +1,4 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
 import { validate } from "../src/index.js";
@@ -13,13 +10,8 @@ import { runDecisionsBindingsDemo } from "../examples/decisions-bindings/demo.js
 import { runPrefabsDemo } from "../examples/prefabs/demo.js";
 import { runSlotsDemo } from "../examples/slots/demo.js";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, "../..");
-
 describe("examples", () => {
     it("ships a minimal browser example", () => {
-        assert.equal(existsSync(resolve(root, "examples/browser-minimal/index.html")), true);
-        assert.equal(existsSync(resolve(root, "examples/browser-minimal/main.ts")), true);
         assert.doesNotThrow(() => validate(browserDoc));
     });
 
