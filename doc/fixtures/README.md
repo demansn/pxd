@@ -39,6 +39,9 @@ doc/fixtures/
 | `invalid/non-composable-has-children.json` | `sprite` carries `children` | §10 rule 8 |
 | `invalid/sprite-frame-removed.json` | Sprite uses removed `frame`; encode final atlas subtexture in `texture` instead | §4.2 |
 | `invalid/text-fit-removed.json` | Text uses removed `fit`; shrink policies belong in custom node types | §4.3 |
+| `invalid/text-inline-style-object.json` | Text uses removed inline Pixi style object; use a style id resolver or custom node type | §4.3 |
+| `invalid/graphics-inline-fill-object.json` | Graphics uses removed inline Pixi fill object; use string color or custom node type | §4.4 |
+| `invalid/graphics-inline-stroke-object.json` | Graphics uses removed inline Pixi stroke object; use string color + `strokeWidth` or custom node type | §4.4 |
 | `invalid/intrinsic-has-props.json` | An intrinsic type carries legacy `props` | §10 rule 10 |
 | `invalid/custom-props.json` | Legacy runtime/custom node `props` payload is rejected; use top-level fields | §5 migration |
 | `invalid/decision-unsorted-selector.json` | Decision-map selector `mobile+de` is not lexicographically sorted | §10 rule 12 |

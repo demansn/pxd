@@ -68,13 +68,8 @@ const sprite: NodeType = {
 };
 
 function resolveTextStyle(node: ResolvedNode, ctx: AssignContext): object | undefined {
-    if (typeof node.style === "string") {
-        return ctx.resolve.style?.(ctx.readString(node.style));
-    }
-    if (node.style !== undefined && typeof node.style === "object") {
-        return node.style as object;
-    }
-    return undefined;
+    if (typeof node.style !== "string") return undefined;
+    return ctx.resolve.style?.(ctx.readString(node.style));
 }
 
 function applyTextMaxWidth(node: ResolvedNode, target: Text): void {
@@ -130,20 +125,12 @@ export function drawShape(
             g.poly(node.points as number[]);
             break;
     }
-    if (node.fill !== undefined) {
-        const fill =
-            typeof node.fill === "string"
-                ? readString(node.fill)
-                : (node.fill as object);
-        g.fill(fill);
+    if (typeof node.fill === "string") {
+        g.fill(readString(node.fill));
     }
-    if (node.stroke !== undefined) {
+    if (typeof node.stroke === "string") {
         const strokeWidth = (node.strokeWidth as number | undefined) ?? 1;
-        const stroke =
-            typeof node.stroke === "string"
-                ? { color: readString(node.stroke), width: strokeWidth }
-                : { ...(node.stroke as object), width: strokeWidth };
-        g.stroke(stroke);
+        g.stroke({ color: readString(node.stroke), width: strokeWidth });
     }
 }
 

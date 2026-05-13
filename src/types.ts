@@ -86,8 +86,7 @@ export interface SpriteNode extends BaseNode {
 export interface TextNode extends BaseNode {
     type: "text";
     text: Decidable<string>;
-    /** String form is Decidable; inline object form is NOT (§3.6 scope). */
-    style?: Decidable<string> | Record<string, unknown>;
+    style?: Decidable<string>;
     maxWidth?: Decidable<number>;
     anchorX?: Decidable<number>;
     anchorY?: Decidable<number>;
@@ -103,10 +102,8 @@ export interface GraphicsNode extends BaseNode {
     height?: Decidable<number>;
     radius?: Decidable<number>;
     points?: number[];
-    /** String form is Decidable; inline object form is NOT (§3.6 scope). */
-    fill?: Decidable<string> | Record<string, unknown>;
-    /** String form is Decidable; inline object form is NOT (§3.6 scope). */
-    stroke?: Decidable<string> | Record<string, unknown>;
+    fill?: Decidable<string>;
+    stroke?: Decidable<string>;
     strokeWidth?: Decidable<number>;
     children?: never;
 }

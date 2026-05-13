@@ -68,14 +68,6 @@
         { "$ref": "#/$defs/decisionNumber" }
       ]
     },
-    "decidableStringOrObject": {
-      "$comment": "anyOf (not oneOf): a decisionString like {_: 'h1'} also satisfies {type: object}, so oneOf would reject it.",
-      "anyOf": [
-        { "type": "string" },
-        { "$ref": "#/$defs/decisionString" },
-        { "type": "object" }
-      ]
-    },
     "decidableGraphicsShape": {
       "anyOf": [
         { "enum": ["rect", "roundRect", "circle", "ellipse", "polygon"] },
@@ -148,7 +140,7 @@
       "properties": {
         "type":     { "const": "text" },
         "text":     { "$ref": "#/$defs/decidableString" },
-        "style":    { "$ref": "#/$defs/decidableStringOrObject" },
+        "style":    { "$ref": "#/$defs/decidableString" },
         "maxWidth": { "$ref": "#/$defs/decidableNumber" },
         "anchorX":  { "$ref": "#/$defs/decidableNumber" },
         "anchorY":  { "$ref": "#/$defs/decidableNumber" }
@@ -179,8 +171,8 @@
         "height":      { "$ref": "#/$defs/decidableNumber" },
         "radius":      { "$ref": "#/$defs/decidableNumber" },
         "points":      { "type": "array", "items": { "type": "number" } },
-        "fill":        { "$ref": "#/$defs/decidableStringOrObject" },
-        "stroke":      { "$ref": "#/$defs/decidableStringOrObject" },
+        "fill":        { "$ref": "#/$defs/decidableString" },
+        "stroke":      { "$ref": "#/$defs/decidableString" },
         "strokeWidth": { "$ref": "#/$defs/decidableNumber" }
       },
       "required": ["type", "shape"],

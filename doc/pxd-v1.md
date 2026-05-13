@@ -280,14 +280,14 @@ A raster image node. There is no separate `image` type.
 | Field | Type | Required | Default | Description |
 |---|---|---:|---|---|
 | `text` | string | yes | — | Text content |
-| `style` | string/object | no | — | Style identifier (preferred) or inline style object |
+| `style` | string | no | — | Style identifier resolved by the host |
 | `maxWidth` | number | no | — | Maximum display width constraint |
 | `anchorX` | number | no | 0 | Anchor X in [0, 1] |
 | `anchorY` | number | no | 0 | Anchor Y in [0, 1] |
 
 `maxWidth` maps to Pixi Text word wrapping (`wordWrap` + `wordWrapWidth`). This lightweight reader does not define text auto-fit/shrink behavior; implement shrink-to-fit by overriding the `text` node type if your runtime needs it.
 
-Inline style objects are not constrained by this specification; Pixi.js text style fields evolve across versions. Producers SHOULD prefer string identifiers resolved by the runtime.
+This lightweight reader keeps intrinsic fields strict. Complex Pixi `TextStyle` objects are host/runtime concerns; use string style ids/resolvers or custom `nodeTypes` when you need them.
 
 ### 4.4 `graphics`
 
@@ -312,8 +312,8 @@ A geometric shape node. May also be used as a mask source.
 | `height` | number | conditional | Required for `rect`, `roundRect`, `ellipse` |
 | `radius` | number | conditional | Required for `circle`; optional corner radius for `roundRect` |
 | `points` | number[] | conditional | Required for `polygon`. Flat array `[x0, y0, x1, y1, ...]` |
-| `fill` | string/object | no | Fill definition |
-| `stroke` | string/object | no | Stroke definition |
+| `fill` | string | no | Fill color/id |
+| `stroke` | string | no | Stroke color/id |
 | `strokeWidth` | number | no | Stroke width |
 
 ### 4.5 `slot`

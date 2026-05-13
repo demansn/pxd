@@ -1,0 +1,10 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "title",
+    "type": "text",
+    "text": "Hello",
+    "style": { "fontSize": 32, "fill": "#ffffff" }
+  }
+}

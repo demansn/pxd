@@ -360,6 +360,14 @@ const intrinsicSpecs: Record<string, FieldSpec[]> = {
     spine: [{ name: "skeleton", check: isNonEmptyStr, label: "string" }],
 };
 
+const optionalIntrinsicSpecs: Record<string, FieldSpec[]> = {
+    text: [{ name: "style", check: isString, label: "string" }],
+    graphics: [
+        { name: "fill", check: isString, label: "string" },
+        { name: "stroke", check: isString, label: "string" },
+    ],
+};
+
 const shapeRequirements: Record<string, FieldSpec[]> = {
     rect: [
         { name: "width", check: isNumber, label: "number" },
@@ -380,6 +388,7 @@ const shapeRequirements: Record<string, FieldSpec[]> = {
 function validateIntrinsicFields(node: Record<string, unknown>): void {
     const type = node.type as string;
     validateIntrinsicKnownFields(node, type);
+    validateOptionalIntrinsicFields(node, type);
     const specs = intrinsicSpecs[type];
     if (specs) {
         for (const spec of specs) {
@@ -393,6 +402,20 @@ function validateIntrinsicFields(node: Record<string, unknown>): void {
         return;
     }
     if (type === "graphics") validateGraphicsShape(node);
+}
+
+function validateOptionalIntrinsicFields(node: Record<string, unknown>, type: string): void {
+    const specs = optionalIntrinsicSpecs[type];
+    if (!specs) return;
+    for (const spec of specs) {
+        if (node[spec.name] === undefined) continue;
+        if (!isDecidableWith(node[spec.name], spec.check)) {
+            throw new ValidationError(
+                "rule 7",
+                `${type} node '${node.id}' must have ${spec.label} '${spec.name}'`,
+            );
+        }
+    }
 }
 
 function validateIntrinsicKnownFields(node: Record<string, unknown>, type: string): void {
