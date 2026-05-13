@@ -1,0 +1,9 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "bad",
+    "type": "graphics",
+    "shape": "triangle"
+  }
+}

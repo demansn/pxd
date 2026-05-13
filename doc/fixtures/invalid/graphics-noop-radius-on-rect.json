@@ -1,0 +1,12 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "bad",
+    "type": "graphics",
+    "shape": "rect",
+    "width": 100,
+    "height": 50,
+    "radius": 8
+  }
+}

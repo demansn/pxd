@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Container, Sprite, Text, Texture } from "pixi.js";
+import { Container, Sprite, Text, Texture, type Graphics } from "pixi.js";
 
 import { build } from "../src/build.js";
 import type { Resolvers } from "../src/context.js";
+import type { ResolvedNode } from "../src/types.js";
+import { drawShape } from "../src/nodeTypes.js";
+import { validate, ValidationError } from "../src/validate.js";
 import { find } from "../src/find.js";
 import { getSlot } from "../src/slots.js";
 
@@ -171,4 +174,81 @@ test("intrinsic text: applies text, resolved style, maxWidth wrapping, and ancho
     assert.equal(root.style.wordWrapWidth, 180);
     assert.equal(root.anchor.x, 0.5);
     assert.equal(root.anchor.y, 1);
+});
+
+function makeGraphicsRecorder(): { graphics: Graphics; calls: unknown[][] } {
+    const calls: unknown[][] = [];
+    const graphics = {
+        rect: (...args: unknown[]) => { calls.push(["rect", ...args]); return graphics; },
+        roundRect: (...args: unknown[]) => { calls.push(["roundRect", ...args]); return graphics; },
+        circle: (...args: unknown[]) => { calls.push(["circle", ...args]); return graphics; },
+        ellipse: (...args: unknown[]) => { calls.push(["ellipse", ...args]); return graphics; },
+        poly: (...args: unknown[]) => { calls.push(["poly", ...args]); return graphics; },
+        fill: (...args: unknown[]) => { calls.push(["fill", ...args]); return graphics; },
+        stroke: (...args: unknown[]) => { calls.push(["stroke", ...args]); return graphics; },
+    } as unknown as Graphics;
+    return { graphics, calls };
+}
+
+test("intrinsic graphics: drawShape emits rect, roundRect, circle, ellipse, and polygon calls", () => {
+    const cases: Array<{ node: ResolvedNode; expected: unknown[] }> = [
+        { node: { id: "g", type: "graphics", shape: "rect", width: 10, height: 20 }, expected: ["rect", 0, 0, 10, 20] },
+        { node: { id: "g", type: "graphics", shape: "roundRect", width: 10, height: 20, radius: 3 }, expected: ["roundRect", 0, 0, 10, 20, 3] },
+        { node: { id: "g", type: "graphics", shape: "circle", radius: 7 }, expected: ["circle", 0, 0, 7] },
+        { node: { id: "g", type: "graphics", shape: "ellipse", width: 10, height: 20 }, expected: ["ellipse", 0, 0, 5, 10] },
+        { node: { id: "g", type: "graphics", shape: "polygon", points: [0, 0, 10, 0, 10, 10] }, expected: ["poly", [0, 0, 10, 0, 10, 10]] },
+    ];
+
+    for (const c of cases) {
+        const { graphics, calls } = makeGraphicsRecorder();
+        drawShape(graphics, c.node, (value) => value);
+        assert.deepEqual(calls[0], c.expected);
+    }
+});
+
+test("intrinsic graphics: drawShape resolves string fill and stroke", () => {
+    const { graphics, calls } = makeGraphicsRecorder();
+
+    drawShape(graphics, {
+        id: "g",
+        type: "graphics",
+        shape: "rect",
+        width: 10,
+        height: 20,
+        fill: "{color.fill}",
+        stroke: "{color.stroke}",
+        strokeWidth: 4,
+    }, (value) => value.replace("{color.fill}", "#112233").replace("{color.stroke}", "#445566"));
+
+    assert.deepEqual(calls, [
+        ["rect", 0, 0, 10, 20],
+        ["fill", "#112233"],
+        ["stroke", { color: "#445566", width: 4 }],
+    ]);
+});
+
+test("validate: graphics rejects unknown literal shape", () => {
+    assert.throws(
+        () => validate({
+            format: "pxd",
+            version: 1,
+            root: { id: "bad", type: "graphics", shape: "triangle" },
+        }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 7"
+            && /unknown graphics shape 'triangle'/.test(error.message),
+    );
+});
+
+test("validate: graphics rejects shape-specific no-op fields for literal shapes", () => {
+    assert.throws(
+        () => validate({
+            format: "pxd",
+            version: 1,
+            root: { id: "bad", type: "graphics", shape: "rect", width: 10, height: 20, radius: 4 },
+        }),
+        (error) => error instanceof ValidationError
+            && error.rule === "rule 7"
+            && /field 'radius'.*not used by graphics shape 'rect'/.test(error.message),
+    );
 });

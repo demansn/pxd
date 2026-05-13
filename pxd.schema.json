@@ -162,6 +162,26 @@
         {
           "if": { "properties": { "shape": { "const": "circle" } } },
           "then": { "required": ["radius"] }
+        },
+        {
+          "if": { "properties": { "shape": { "const": "rect" } } },
+          "then": { "not": { "anyOf": [{ "required": ["radius"] }, { "required": ["points"] }] } }
+        },
+        {
+          "if": { "properties": { "shape": { "const": "roundRect" } } },
+          "then": { "not": { "required": ["points"] } }
+        },
+        {
+          "if": { "properties": { "shape": { "const": "circle" } } },
+          "then": { "not": { "anyOf": [{ "required": ["width"] }, { "required": ["height"] }, { "required": ["points"] }] } }
+        },
+        {
+          "if": { "properties": { "shape": { "const": "ellipse" } } },
+          "then": { "not": { "anyOf": [{ "required": ["radius"] }, { "required": ["points"] }] } }
+        },
+        {
+          "if": { "properties": { "shape": { "const": "polygon" } } },
+          "then": { "not": { "anyOf": [{ "required": ["width"] }, { "required": ["height"] }, { "required": ["radius"] }] } }
         }
       ],
       "properties": {

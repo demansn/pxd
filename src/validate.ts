@@ -385,6 +385,22 @@ const shapeRequirements: Record<string, FieldSpec[]> = {
     polygon: [{ name: "points", check: isArray, label: "array", /* not decidable */ }],
 };
 
+const COMMON_GRAPHICS_FIELDS = [
+    ...COMMON_NODE_FIELDS,
+    "shape",
+    "fill",
+    "stroke",
+    "strokeWidth",
+];
+
+const allowedGraphicsFieldsByShape: Record<string, ReadonlySet<string>> = {
+    rect: new Set([...COMMON_GRAPHICS_FIELDS, "width", "height"]),
+    roundRect: new Set([...COMMON_GRAPHICS_FIELDS, "width", "height", "radius"]),
+    circle: new Set([...COMMON_GRAPHICS_FIELDS, "radius"]),
+    ellipse: new Set([...COMMON_GRAPHICS_FIELDS, "width", "height"]),
+    polygon: new Set([...COMMON_GRAPHICS_FIELDS, "points"]),
+};
+
 function validateIntrinsicFields(node: Record<string, unknown>): void {
     const type = node.type as string;
     validateIntrinsicKnownFields(node, type);
@@ -438,7 +454,13 @@ function validateGraphicsShape(node: Record<string, unknown>): void {
     }
     if (typeof shape !== "string") return; // decision-map shape: defer to runtime
     const reqs = shapeRequirements[shape];
-    if (!reqs) return;
+    if (!reqs) {
+        throw new ValidationError(
+            "rule 7",
+            `graphics node '${node.id}' has unknown graphics shape '${shape}'`,
+        );
+    }
+    validateGraphicsShapeFields(node, shape);
     for (const spec of reqs) {
         // `points` is an array (non-decidable); others must be decidable numbers.
         const ok = spec.check === isArray
@@ -450,6 +472,18 @@ function validateGraphicsShape(node: Record<string, unknown>): void {
                 `graphics ${shape} node '${node.id}' requires '${spec.name}' (${spec.label})`,
             );
         }
+    }
+}
+
+function validateGraphicsShapeFields(node: Record<string, unknown>, shape: string): void {
+    const allowed = allowedGraphicsFieldsByShape[shape];
+    if (!allowed) return;
+    for (const field of Object.keys(node)) {
+        if (allowed.has(field)) continue;
+        throw new ValidationError(
+            "rule 7",
+            `field '${field}' is not used by graphics shape '${shape}' on node '${node.id}'`,
+        );
     }
 }
 
