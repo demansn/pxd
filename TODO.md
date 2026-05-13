@@ -66,11 +66,11 @@
   - [x] `graphics`: все shape cases, ошибки неполных shape fields и shape-specific no-op полей.
   - [x] `slot`: реализованы/описаны `width` и `height` через стабильный empty-slot bounds.
 - [x] Решить судьбу `spine`: убран из default intrinsic support и оставлен через custom `nodeTypes`.
-- [ ] Затем расширить PXD v1 intrinsic набор практичными Pixi v8 типами:
+- [x] Затем расширить PXD v1 intrinsic набор практичными Pixi v8 типами:
   - [x] `nineSliceSprite`.
-  - [ ] `tilingSprite`.
-  - [ ] `animatedSprite`.
-  - [ ] `bitmapText`.
+  - [x] `tilingSprite`.
+  - [x] `animatedSprite`.
+  - [x] `bitmapText`.
 - [x] Не добавлять engine/game-specific типы в базу: buttons, reels, layout controllers, Spine/game objects — через custom `nodeTypes`.
 
 ## 5. Descriptor как source of truth для intrinsic structure
