@@ -9,7 +9,7 @@
 
 import type { Container } from "pixi.js";
 import { makeStringReader } from "./bindings.js";
-import { applyBaseFields } from "./build.js";
+import { applyBasePatchFields } from "./build.js";
 import type { AssignContext, NodeType, Resolvers } from "./context.js";
 import { mergeRegistry } from "./context.js";
 import { resolveNodeFields } from "./decisions.js";
@@ -77,7 +77,7 @@ function applyNode(node: Node, target: Container, labelPath: string, state: Appl
     const type = state.nodeTypes.get(resolved.type);
     // Same order as build: type-specific first, base fields last.
     type?.assign?.(resolved, target, state.ctx);
-    applyBaseFields(target, resolved);
+    applyBasePatchFields(target, resolved);
     applyMask(resolved, target, state.ctx.idMap);
     state.count++;
     applyChildren(resolved, target, labelPath, state);

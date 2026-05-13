@@ -133,11 +133,28 @@ function bindPendingMasks(state: BuildSubtreeState): void {
 }
 
 /**
- * Apply base PXD fields (§3.1) to a Pixi Container.
+ * Apply base PXD fields (§3.1) to a freshly built Pixi Container.
  *
  * NOTE: `label` is `node.label ?? node.id` per §3.2 — load-bearing for find/apply.
  */
 export function applyBaseFields(obj: Container, node: ResolvedNode): void {
+    applyTransformFields(obj, node);
+    applyBuildLabel(obj, node);
+}
+
+/**
+ * Apply base fields during `apply()` patching.
+ *
+ * Patch semantics: absent optional fields do not reset live state. Therefore
+ * `label` is only changed when explicitly present on the apply node; build-time
+ * fallback to `id` belongs only to `applyBaseFields()`.
+ */
+export function applyBasePatchFields(obj: Container, node: ResolvedNode): void {
+    applyTransformFields(obj, node);
+    applyPatchLabel(obj, node);
+}
+
+function applyTransformFields(obj: Container, node: ResolvedNode): void {
     if (typeof node.x === "number") obj.x = node.x;
     if (typeof node.y === "number") obj.y = node.y;
     if (typeof node.scaleX === "number") obj.scale.x = node.scaleX;
@@ -146,7 +163,14 @@ export function applyBaseFields(obj: Container, node: ResolvedNode): void {
     if (typeof node.alpha === "number") obj.alpha = node.alpha;
     if (typeof node.visible === "boolean") obj.visible = node.visible;
     if (typeof node.zIndex === "number") obj.zIndex = node.zIndex;
+}
+
+function applyBuildLabel(obj: Container, node: ResolvedNode): void {
     obj.label = (node.label as string | undefined) ?? (node.id as string);
+}
+
+function applyPatchLabel(obj: Container, node: ResolvedNode): void {
+    if (typeof node.label === "string") obj.label = node.label;
 }
 
 function tagNode(obj: Container, node: ResolvedNode, readString: (s: string) => string): void {
