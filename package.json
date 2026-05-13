@@ -28,6 +28,8 @@
   },
   "files": [
     "dist/src",
+    "dist/examples",
+    "examples",
     "doc/pxd-v1.md",
     "pxd.schema.json",
     "README.md",
@@ -36,7 +38,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
-    "test": "tsc && node dist/test/fixtures.test.js && node --test dist/test/build.test.js dist/test/apply.test.js dist/test/intrinsics.test.js dist/test/find.test.js dist/test/slots.test.js dist/test/schema.test.js dist/test/cli.test.js",
+    "examples:check": "tsc && node --test dist/test/examples.test.js",
+    "test": "tsc && node dist/test/fixtures.test.js && node --test dist/test/build.test.js dist/test/apply.test.js dist/test/intrinsics.test.js dist/test/find.test.js dist/test/slots.test.js dist/test/schema.test.js dist/test/cli.test.js dist/test/examples.test.js",
     "prepack": "npm run build",
     "prepublishOnly": "npm test"
   },

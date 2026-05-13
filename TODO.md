@@ -115,13 +115,14 @@
 
 ## 9. Examples и проверяемые демо
 
-- [ ] Минимальный browser example.
-- [ ] Custom node type example без `props`, с top-level custom fields.
-- [ ] Custom composable node example.
-- [ ] Hot reload/apply patch example.
-- [ ] Slots example.
-- [ ] Prefabs example.
-- [ ] Проверять examples в build/CI.
+- [x] Минимальный browser example.
+- [x] Custom node type example без `props`, с top-level custom fields.
+- [x] Custom composable node example.
+- [x] Hot reload/apply patch example.
+- [x] Slots example.
+- [x] Prefabs example.
+- [x] Проверять examples в build/CI.
+- [x] Decisions/bindings example для core resolution сценариев.
 
 ## 10. CI / качество
 

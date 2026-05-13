@@ -22,6 +22,20 @@ npm install
 npm test
 ```
 
+## Examples
+
+Checkable examples live in [`examples/`](./examples/):
+
+- [`browser-minimal`](./examples/browser-minimal/) — minimal Pixi browser bootstrap.
+- [`custom-node-type`](./examples/custom-node-type/) — custom `NodeType` with top-level custom fields, no `props`.
+- [`custom-composable-node`](./examples/custom-composable-node/) — custom nodes with document-defined children.
+- [`hot-reload-apply`](./examples/hot-reload-apply/) — patch an existing tree with `apply()`.
+- [`slots`](./examples/slots/) — slot lookup and host-owned content mounting.
+- [`prefabs`](./examples/prefabs/) — Library prefab declaration and instantiation.
+- [`decisions-bindings`](./examples/decisions-bindings/) — active tags and `{path}` bindings.
+
+Examples are compiled and smoke-tested by `npm test`.
+
 ## CLI
 
 The package exposes a `pxd` binary:
