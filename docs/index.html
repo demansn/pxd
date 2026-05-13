@@ -273,9 +273,126 @@ build(doc, {
                 <h3>Migration note: no <code>props</code></h3>
                 <p>Older drafts used <code>{ "props": { "text": "SPIN" } }</code> for runtime/custom nodes. Custom parameters now live directly on the node: <code>{ "text": "SPIN" }</code>. <code>props</code> is rejected so custom scalar fields can participate in the same decision-resolution pipeline as built-in fields.</p>
             </section>
-            <section id="decisions-and-bindings"><h2>Decisions and bindings</h2><p>TODO — Task 7.</p></section>
-            <section id="prefabs"><h2>Prefabs</h2><p>TODO — Task 7.</p></section>
-            <section id="slots"><h2>Slots</h2><p>TODO — Task 7.</p></section>
+            <section id="decisions-and-bindings">
+                <h2>Decisions and bindings</h2>
+                <p>Two load-time resolution features let one document respond to host state without being rewritten:</p>
+                <table>
+                    <thead><tr><th>Feature</th><th>What it does</th><th>Where it applies</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Decision values (§3.6)</strong></td><td>Pick a primitive based on the active tag set.</td><td>Scalar fields such as <code>x</code>, <code>texture</code>, <code>text</code>, <code>fill</code>, and custom scalar fields.</td></tr>
+                        <tr><td><strong>String bindings (§7.2)</strong></td><td>Replace <code>{path}</code> placeholders through <code>resolve.binding</code>.</td><td>Inside any string value after decisions are resolved.</td></tr>
+                    </tbody>
+                </table>
+<pre><code class="language-json">{
+    "id": "title",
+    "type": "text",
+    "text": { "_": "Welcome, {user.name}!", "ru": "Добро пожаловать, {user.name}!" },
+    "x": { "_": 100, "mobile": 50 },
+    "maxWidth": { "_": 320, "de": 400, "de+mobile": 360 }
+}</code></pre>
+<pre><code class="language-ts">const root = build(doc, {
+    activeTags: ["de", "mobile"],
+    resolve: {
+        texture: Assets.get,
+        binding: (path) =&gt; path === "user.name" ? "Ada" : "",
+    },
+});
+
+// Later: same Containers, different resolved values.
+apply(doc, root, { activeTags: ["mobile", "dark", "en"], resolve });</code></pre>
+                <h3>Selector rules</h3>
+                <ul>
+                    <li>Every decision map must have <code>_</code> as the default.</li>
+                    <li>Selectors are single tags (<code>mobile</code>) or lexicographically sorted tag sets joined by <code>+</code> (<code>de+mobile</code>, not <code>mobile+de</code>).</li>
+                    <li>The most specific matching selector wins; declaration order breaks ties.</li>
+                    <li>Structural fields are not decidable: <code>id</code>, <code>type</code>, <code>mask</code>, <code>children</code>, <code>extensions</code>, <code>points</code>.</li>
+                </ul>
+                <h3>Binding escapes</h3>
+                <ul>
+                    <li><code>\{</code> → literal <code>{</code></li>
+                    <li><code>\\</code> → literal <code>\</code></li>
+                    <li>Substituted values are not rescanned for more bindings.</li>
+                    <li>If <code>resolve.binding</code> is omitted, placeholders pass through literally.</li>
+                </ul>
+                <p>See the <a href="#example-decisions-bindings">decisions and bindings example</a>.</p>
+            </section>
+
+            <section id="prefabs">
+                <h2>Prefabs</h2>
+                <p>A prefab is a reusable subtree declared once and instantiated by <code>type</code>. Documents with <code>prefabs</code> are Library-level documents. Each prefab instance gets its own id scope (§13.2), so internal ids do not collide between instances.</p>
+<pre><code class="language-json">{
+    "format": "pxd",
+    "version": 1,
+    "level": "library",
+    "prefabs": {
+        "Button.primary": {
+            "id": "root",
+            "type": "container",
+            "children": [
+                { "id": "bg", "type": "sprite", "texture": "btn_primary" },
+                { "id": "caption", "type": "text", "text": "" }
+            ]
+        }
+    },
+    "root": {
+        "id": "menu",
+        "type": "container",
+        "children": [
+            { "id": "playBtn", "type": "Button.primary", "x": 100, "y": 50 },
+            { "id": "settingsBtn", "type": "Button.primary", "x": 100, "y": 120 }
+        ]
+    }
+}</code></pre>
+                <h3>Rules and restrictions</h3>
+                <ul>
+                    <li>Prefab graphs must be acyclic; cycles are rejected by validation.</li>
+                    <li>Prefab references cannot carry <code>children</code>. Their structure comes from the prefab body.</li>
+                    <li>If a runtime <code>nodeTypes</code> map and <code>prefabs</code> both define the same type key, build rejects the collision.</li>
+                    <li>Use <code>apply()</code> after build to patch specific prefab instance descendants by label path, e.g. <code>playBtn.caption</code>.</li>
+                </ul>
+                <table>
+                    <thead><tr><th>Use a prefab when…</th><th>Use a custom node type when…</th></tr></thead>
+                    <tbody>
+                        <tr><td>The widget is just a composition of intrinsic/custom nodes.</td><td>You need actual class behaviour, event listeners, methods, or internal state.</td></tr>
+                        <tr><td>Designers should edit the structure as JSON.</td><td>The host engine owns construction and field validation.</td></tr>
+                        <tr><td>Every instance is structurally identical.</td><td>Instances need runtime-specific construction.</td></tr>
+                    </tbody>
+                </table>
+                <p>See the <a href="#example-prefabs">prefabs example</a>.</p>
+            </section>
+
+            <section id="slots">
+                <h2>Slots</h2>
+                <p>A <code>slot</code> node (§4.5) is a passive named mount point: an empty Pixi <code>Container</code> tagged with <code>Symbol.for("pxd.slot")</code>. Your game mounts external content into it after build.</p>
+<pre><code class="language-json">{
+    "id": "hud",
+    "type": "container",
+    "children": [
+        {
+            "id": "reelsMount",
+            "type": "slot",
+            "slot": "Reels",
+            "x": 100, "y": 200,
+            "width": 800, "height": 480
+        }
+    ]
+}</code></pre>
+<pre><code class="language-ts">const root = build(doc, { resolve });
+const reels = new ReelsContainer({ rows: 5, cols: 5 });
+mountSlot(root, "Reels", reels);
+
+const mount = getSlot(root, "Reels");
+if (mount) mount.addChild(reelsOverlay);</code></pre>
+                <h3>Why slots and not labels?</h3>
+                <ul>
+                    <li><code>find(root, "reels")</code> uses <code>Container.label</code>; slots use a symbol tag and a semantic <code>slot</code> name.</li>
+                    <li>Slot lookup survives label collisions and cross-module boundaries.</li>
+                    <li>The <code>slot</code> field is a normal string field, so bindings work: <code>"slot": "Board.{layout.type}"</code>.</li>
+                    <li>Mounted content survives <code>apply()</code> because the host owns slot children.</li>
+                </ul>
+                <p>Slots do not auto-size mounted content. If you declare <code>width</code> / <code>height</code>, read those values from the slot and scale your host-owned content yourself.</p>
+                <p>See the <a href="#example-slots">slots example</a>.</p>
+            </section>
             <section id="cli"><h2>CLI</h2><p>TODO — Task 8.</p></section>
             <section id="not-included"><h2>What's not included</h2><p>TODO — Task 8.</p></section>
 
