@@ -113,8 +113,6 @@
         "rotation":   { "$ref": "#/$defs/decidableNumber" },
         "alpha":      { "$ref": "#/$defs/decidableNumber" },
         "zIndex":     { "$ref": "#/$defs/decidableNumber" },
-        "pivotX":     { "$ref": "#/$defs/decidableNumber" },
-        "pivotY":     { "$ref": "#/$defs/decidableNumber" },
         "visible":    { "$ref": "#/$defs/decidableBoolean" },
         "mask":       { "type": "string" },
         "extensions": { "type": "object" }
@@ -124,6 +122,8 @@
       "allOf": [{ "$ref": "#/$defs/baseNode" }],
       "properties": {
         "type":     { "const": "container" },
+        "pivotX":   { "$ref": "#/$defs/decidableNumber" },
+        "pivotY":   { "$ref": "#/$defs/decidableNumber" },
         "children": { "type": "array", "items": { "$ref": "#/$defs/node" } }
       },
       "required": ["type"],
@@ -134,7 +134,6 @@
       "properties": {
         "type":    { "const": "sprite" },
         "texture": { "$ref": "#/$defs/decidableString" },
-        "frame":   { "$ref": "#/$defs/decidableString" },
         "tint":    { "$ref": "#/$defs/decidableTint" },
         "width":   { "$ref": "#/$defs/decidableNumber" },
         "height":  { "$ref": "#/$defs/decidableNumber" },

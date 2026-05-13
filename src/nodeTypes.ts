@@ -54,7 +54,7 @@ const container: NodeType = {
 const sprite: NodeType = {
     create: () => new Sprite(),
     // Order matters: texture must be set BEFORE width/height — those mutate scale
-    // via the current texture's frame dimensions.
+    // via the current texture dimensions.
     assign: (node, target, ctx) => {
         if (!(target instanceof Sprite)) return;
         if (typeof node.texture === "string" && ctx.resolve.texture) {

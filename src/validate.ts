@@ -304,6 +304,31 @@ function typeofPrimitive(v: unknown): "number" | "string" | "boolean" | null {
 // Intrinsic field specs — table-driven (§7)
 // =============================================================================
 
+const COMMON_NODE_FIELDS = [
+    "id",
+    "type",
+    "label",
+    "x",
+    "y",
+    "scaleX",
+    "scaleY",
+    "rotation",
+    "alpha",
+    "visible",
+    "zIndex",
+    "mask",
+    "extensions",
+];
+
+const intrinsicAllowedFields: Record<string, ReadonlySet<string>> = {
+    container: new Set([...COMMON_NODE_FIELDS, "pivotX", "pivotY", "children"]),
+    sprite: new Set([...COMMON_NODE_FIELDS, "texture", "tint", "width", "height", "anchorX", "anchorY"]),
+    text: new Set([...COMMON_NODE_FIELDS, "text", "style", "maxWidth", "fit", "anchorX", "anchorY"]),
+    graphics: new Set([...COMMON_NODE_FIELDS, "shape", "width", "height", "radius", "points", "fill", "stroke", "strokeWidth"]),
+    slot: new Set([...COMMON_NODE_FIELDS, "slot", "width", "height"]),
+    spine: new Set([...COMMON_NODE_FIELDS, "skeleton", "skin", "animation"]),
+};
+
 type FieldCheck = (v: unknown) => boolean;
 
 const isString: FieldCheck = (x) => typeof x === "string";
@@ -354,6 +379,7 @@ const shapeRequirements: Record<string, FieldSpec[]> = {
 
 function validateIntrinsicFields(node: Record<string, unknown>): void {
     const type = node.type as string;
+    validateIntrinsicKnownFields(node, type);
     const specs = intrinsicSpecs[type];
     if (specs) {
         for (const spec of specs) {
@@ -367,6 +393,19 @@ function validateIntrinsicFields(node: Record<string, unknown>): void {
         return;
     }
     if (type === "graphics") validateGraphicsShape(node);
+}
+
+function validateIntrinsicKnownFields(node: Record<string, unknown>, type: string): void {
+    const allowed = intrinsicAllowedFields[type];
+    if (!allowed) return;
+    for (const field of Object.keys(node)) {
+        if (!allowed.has(field)) {
+            throw new ValidationError(
+                "rule 7",
+                `intrinsic ${type} node '${node.id}' has unknown field '${field}'`,
+            );
+        }
+    }
 }
 
 function validateGraphicsShape(node: Record<string, unknown>): void {

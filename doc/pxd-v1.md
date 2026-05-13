@@ -208,7 +208,7 @@ A decision map is a JSON object satisfying all of:
 4. **Tie-break**: when several selectors match with equal specificity, the one declared first (JSON insertion order) wins.
 5. If no selector matches, the `"_"` value is used.
 
-**Scope.** Decision values are allowed at any field position where the underlying type is a primitive — base fields (`x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `label`), intrinsic-specific scalar fields (`text`, `maxWidth`, `width`, `height`, `anchorX`, `anchorY`, `pivotX`, `pivotY`, `texture`, `frame`, `tint`, `radius`, `strokeWidth`, `shape`, `style` when string, `fill` when string, `stroke` when string, `slot`, `skeleton`, `skin`, `animation`).
+**Scope.** Decision values are allowed at any field position where the underlying type is a primitive — base fields (`x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `label`), intrinsic-specific scalar fields (`text`, `maxWidth`, `width`, `height`, `anchorX`, `anchorY`, `pivotX`, `pivotY`, `texture`, `tint`, `radius`, `strokeWidth`, `shape`, `style` when string, `fill` when string, `stroke` when string, `slot`, `skeleton`, `skin`, `animation`).
 
 Decision values are NOT permitted on:
 - `id`, `type` — identity must be static.
@@ -256,13 +256,14 @@ A raster image node. There is no separate `image` type.
 
 | Field | Type | Required | Default | Description |
 |---|---|---:|---|---|
-| `texture` | string | yes | — | Opaque texture identifier (§7) |
-| `frame` | string | no | — | Optional atlas sub-frame identifier |
+| `texture` | string | yes | — | Opaque final texture identifier (§7) |
 | `tint` | string/number | no | — | Optional tint |
 | `width` | number | no | — | Optional explicit display width |
 | `height` | number | no | — | Optional explicit display height |
 | `anchorX` | number | no | 0 | Anchor X in [0, 1] |
 | `anchorY` | number | no | 0 | Anchor Y in [0, 1] |
+
+`texture` identifies the final Pixi `Texture` to render. For atlas subtextures, encode the subtexture key into the opaque `texture` id (for example `"atlas/logo_idle"`) and resolve it in the host's texture resolver. This lightweight reader does not define a separate `frame` field.
 
 ### 4.3 `text`
 
@@ -399,7 +400,7 @@ String values in a document fall into two reader-resolved categories: opaque ide
 
 ### 7.1 Asset references
 
-Fields such as `texture`, `frame`, `skeleton`, and `style` are opaque string identifiers. The specification does not define:
+Fields such as `texture`, `skeleton`, and `style` are opaque string identifiers. The specification does not define:
 
 - how identifiers resolve to concrete files,
 - an asset manifest format,

@@ -75,7 +75,6 @@ export interface ContainerNode extends BaseNode {
 export interface SpriteNode extends BaseNode {
     type: "sprite";
     texture: Decidable<string>;
-    frame?: Decidable<string>;
     tint?: Decidable<string> | Decidable<number>;
     width?: Decidable<number>;
     height?: Decidable<number>;

@@ -1,0 +1,10 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "logo",
+    "type": "sprite",
+    "texture": "atlas",
+    "frame": "logo_idle"
+  }
+}
