@@ -203,7 +203,76 @@ interface ApplyOptions extends Partial&lt;BuildOptions&gt; {
                 <p><strong>Matching</strong> uses one-hop child lookup against <code>Container.label</code> at each step — not deep search. <strong>Masks</strong> rebind by <code>id</code> against the live tree's id map; the source may live outside the apply doc.</p>
                 <p>See the <a href="#example-hot-reload-apply">hot-reload example</a> for a live demonstration.</p>
             </section>
-            <section id="custom-node-types"><h2>Custom node types</h2><p>TODO — Task 6.</p></section>
+            <section id="custom-node-types">
+                <h2>Custom node types</h2>
+                <p>The default registry covers intrinsics: <code>container</code>, <code>sprite</code>, <code>nineSliceSprite</code>, <code>tilingSprite</code>, <code>animatedSprite</code>, <code>text</code>, <code>bitmapText</code>, <code>graphics</code>, <code>slot</code>. Anything else — <code>"type": "SpinButton"</code>, <code>"type": "ProgressBar"</code>, <code>"type": "spine"</code> — needs a <code>NodeType</code> registered by the host.</p>
+                <p>Spine and other engine-specific objects are intentionally not built-ins. Register them as custom <code>nodeTypes</code> so your engine owns the Spine runtime dependency and field semantics.</p>
+
+                <h3>The contract</h3>
+<pre><code class="language-ts">interface NodeType {
+    create(node: ResolvedNode, ctx: BuildContext): Container;
+    assign?(node: ResolvedNode, target: Container, ctx: AssignContext): void;
+}</code></pre>
+                <ul>
+                    <li><code>create</code> constructs an empty container subclass.</li>
+                    <li><code>assign</code> writes type-specific fields. Called by both <code>build</code> and <code>apply</code> — write your field-application logic once.</li>
+                </ul>
+
+                <h3>Example: SpinButton</h3>
+<pre><code class="language-ts">import { build, defaultNodeTypes, type NodeType } from "pxd";
+import { Container, Text } from "pixi.js";
+
+class SpinButton extends Container {
+    private caption = new Text({ text: "" });
+    constructor() { super(); this.addChild(this.caption); this.eventMode = "static"; }
+    setLabel(s: string) { this.caption.text = s; }
+    setEnabled(on: boolean) { this.alpha = on ? 1 : 0.4; this.eventMode = on ? "static" : "none"; }
+}
+
+const SpinButtonType: NodeType = {
+    create: () =&gt; new SpinButton(),
+    assign: (node, target, ctx) =&gt; {
+        if (!(target instanceof SpinButton)) return;
+        if (typeof node.text === "string") target.setLabel(ctx.readString(node.text));
+        if (typeof node.enabled === "boolean") target.setEnabled(node.enabled);
+    },
+};
+
+build(doc, {
+    resolve: { texture: Assets.get },
+    nodeTypes: new Map([...defaultNodeTypes, ["SpinButton", SpinButtonType]]),
+});</code></pre>
+
+                <h3>Custom fields live on the node</h3>
+                <p>There is no <code>props</code> container. Custom scalar fields sit at the top level and participate in decision resolution.</p>
+<pre><code class="language-json">{
+    "id": "spinBtn",
+    "type": "SpinButton",
+    "x": 600, "y": 540,
+    "text": { "_": "SPIN", "mobile": "TAP" },
+    "enabled": true
+}</code></pre>
+
+                <div class="callout warn">
+                    <strong>Custom field validation is your responsibility.</strong> The library does no schema check on custom node fields beyond decision-map structural validation. Verify types and ranges inside <code>NodeType.assign</code> (use <code>typeof</code> / <code>instanceof</code> guards as in the example) or in a host-level pre-flight before calling <code>build</code>.
+                </div>
+
+                <h3>Custom nodes can have document-defined children</h3>
+                <p>Custom/runtime nodes are composable. <code>build()</code> creates the custom node, runs its <code>assign</code>, applies base fields, then builds and adds its <code>children</code>. <code>apply()</code> walks children exactly like for <code>container</code>.</p>
+<pre><code class="language-json">{
+    "id": "panel",
+    "type": "Panel",
+    "title": "Menu",
+    "children": [
+        { "id": "caption", "type": "text", "text": "PLAY" }
+    ]
+}</code></pre>
+                <p>Prefab references remain different: they are references to prefab bodies and cannot carry <code>children</code> on the reference node.</p>
+                <p>See <a href="#example-custom-node-type">custom-node-type</a> and <a href="#example-custom-composable-node">custom-composable-node</a> for live demos.</p>
+
+                <h3>Migration note: no <code>props</code></h3>
+                <p>Older drafts used <code>{ "props": { "text": "SPIN" } }</code> for runtime/custom nodes. Custom parameters now live directly on the node: <code>{ "text": "SPIN" }</code>. <code>props</code> is rejected so custom scalar fields can participate in the same decision-resolution pipeline as built-in fields.</p>
+            </section>
             <section id="decisions-and-bindings"><h2>Decisions and bindings</h2><p>TODO — Task 7.</p></section>
             <section id="prefabs"><h2>Prefabs</h2><p>TODO — Task 7.</p></section>
             <section id="slots"><h2>Slots</h2><p>TODO — Task 7.</p></section>
