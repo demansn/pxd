@@ -31,6 +31,14 @@ export interface ApplyOptions {
 
 const EMPTY_ID_MAP: ReadonlyMap<string, Container> = new Map();
 
+interface ApplyState {
+    activeTags: ReadonlySet<string>;
+    nodeTypes: ReadonlyMap<string, NodeType>;
+    ctx: AssignContext;
+    onMissing?: (labelPath: string, nodeId: string) => void;
+    count: number;
+}
+
 /** Apply a PXD doc to an existing Pixi tree. Returns count of updated nodes. */
 export function apply(doc: unknown, root: Container, options: ApplyOptions = {}): number {
     // Apply docs may reference mask sources that live in the existing Pixi tree,
@@ -47,43 +55,55 @@ export function apply(doc: unknown, root: Container, options: ApplyOptions = {})
         ? collectIdMap(root)
         : EMPTY_ID_MAP;
 
-    const ctx: AssignContext = {
-        resolve: options.resolve ?? {},
-        readString,
-        idMap,
+    const state: ApplyState = {
+        activeTags,
+        nodeTypes,
+        ctx: {
+            resolve: options.resolve ?? {},
+            readString,
+            idMap,
+        },
+        onMissing: options.onMissing,
+        count: 0,
     };
 
-    let count = 0;
-
-    function walk(node: Node, target: Container, labelPath: string): void {
-        const resolved = resolveNodeFields(node, activeTags);
-        const type = nodeTypes.get(resolved.type);
-        // Same order as build: type-specific first, base fields last.
-        type?.assign?.(resolved, target, ctx);
-        applyBaseFields(target, resolved);
-        if (typeof resolved.mask === "string") {
-            const mask = idMap.get(resolved.mask);
-            if (mask) target.mask = mask;
-        }
-        count++;
-
-        const children = resolved.children as ResolvedNode[] | undefined;
-        if (!Array.isArray(children)) return;
-        for (const child of children) {
-            const key = (child.label as string | undefined) ?? (child.id as string);
-            const childTarget = target.getChildByLabel(key, false) as Container | null;
-            const childPath = `${labelPath}.${key}`;
-            if (childTarget) {
-                walk(child as Node, childTarget, childPath);
-            } else {
-                options.onMissing?.(childPath, child.id as string);
-            }
-        }
-    }
-
     const rootKey = (docRoot.label as string | undefined) ?? docRoot.id;
-    walk(docRoot, root, rootKey);
-    return count;
+    applyNode(docRoot, root, rootKey, state);
+    return state.count;
+}
+
+function applyNode(node: Node, target: Container, labelPath: string, state: ApplyState): void {
+    const resolved = resolveNodeFields(node, state.activeTags);
+    const type = state.nodeTypes.get(resolved.type);
+    // Same order as build: type-specific first, base fields last.
+    type?.assign?.(resolved, target, state.ctx);
+    applyBaseFields(target, resolved);
+    applyMask(resolved, target, state.ctx.idMap);
+    state.count++;
+    applyChildren(resolved, target, labelPath, state);
+}
+
+function applyMask(node: ResolvedNode, target: Container, idMap: ReadonlyMap<string, Container>): void {
+    if (typeof node.mask !== "string") return;
+    const mask = idMap.get(node.mask);
+    if (mask) target.mask = mask;
+}
+
+function applyChildren(node: ResolvedNode, target: Container, labelPath: string, state: ApplyState): void {
+    const children = node.children as Node[] | undefined;
+    if (!Array.isArray(children)) return;
+    for (const child of children) applyChild(child, target, labelPath, state);
+}
+
+function applyChild(child: Node, target: Container, labelPath: string, state: ApplyState): void {
+    const key = (child.label as string | undefined) ?? child.id;
+    const childTarget = target.getChildByLabel(key, false) as Container | null;
+    const childPath = `${labelPath}.${key}`;
+    if (childTarget) {
+        applyNode(child, childTarget, childPath, state);
+    } else {
+        state.onMissing?.(childPath, child.id);
+    }
 }
 
 /** True if any node in the doc subtree has a string `mask` field. Used by build + apply to skip idMap work. */
@@ -97,11 +117,12 @@ export function docContainsMask(node: Node): boolean {
 
 function collectIdMap(root: Container): ReadonlyMap<string, Container> {
     const map = new Map<string, Container>();
-    function visit(c: Container): void {
-        const id = idOf(c);
-        if (id !== undefined) map.set(id, c);
-        for (const child of c.children) visit(child as Container);
-    }
-    visit(root);
+    collectIdMapNode(root, map);
     return map;
+}
+
+function collectIdMapNode(node: Container, map: Map<string, Container>): void {
+    const id = idOf(node);
+    if (id !== undefined) map.set(id, node);
+    for (const child of node.children) collectIdMapNode(child as Container, map);
 }
