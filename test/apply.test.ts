@@ -51,6 +51,100 @@ test("apply: patches x on existing label-path match", () => {
     assert.equal(find(root, "bg")?.x, 250);
 });
 
+test("apply: walks children of custom nodes", () => {
+    const panelType: NodeType = {
+        create: () => new Container(),
+        assign: () => {},
+    };
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                {
+                    id: "panel",
+                    type: "Panel",
+                    children: [{ id: "caption", type: "container", x: 1 }],
+                },
+            ],
+        },
+    };
+    const root = build(buildDoc, {
+        resolve: resolveStub,
+        nodeTypes: new Map([["Panel", panelType]]),
+    });
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                {
+                    id: "panel",
+                    type: "Panel",
+                    children: [{ id: "caption", type: "container", x: 44 }],
+                },
+            ],
+        },
+    };
+
+    const count = apply(patchDoc, root, {
+        nodeTypes: new Map([["Panel", panelType]]),
+    });
+
+    assert.equal(count, 3, "patched root + panel + caption");
+    assert.equal(find(root, "panel.caption")?.x, 44);
+});
+
+test("apply: missing child under custom node calls onMissing and skips subtree", () => {
+    const panelType: NodeType = {
+        create: () => new Container(),
+        assign: () => {},
+    };
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [{ id: "panel", type: "Panel" }],
+        },
+    };
+    const root = build(buildDoc, {
+        resolve: resolveStub,
+        nodeTypes: new Map([["Panel", panelType]]),
+    });
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                {
+                    id: "panel",
+                    type: "Panel",
+                    children: [{ id: "ghost", type: "container", x: 99 }],
+                },
+            ],
+        },
+    };
+    const missed: Array<{ path: string; nodeId: string }> = [];
+
+    const count = apply(patchDoc, root, {
+        nodeTypes: new Map([["Panel", panelType]]),
+        onMissing: (path, nodeId) => missed.push({ path, nodeId }),
+    });
+
+    assert.equal(count, 2, "patched root + panel; ghost skipped");
+    assert.deepEqual(missed, [{ path: "root.panel.ghost", nodeId: "ghost" }]);
+});
+
 test("apply: missing PXD node calls onMissing and continues", () => {
     const buildDoc = {
         format: "pxd" as const,

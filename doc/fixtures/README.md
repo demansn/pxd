@@ -23,6 +23,7 @@ doc/fixtures/
 | `valid/core-bindings.json` | String bindings (`{locale.title}`, multi-binding, escape `\{`) in `text`, `style`, `texture` fields | §7.2 |
 | `valid/core-decisions.json` | Decision-map values (`{_:100, mobile:50}`, multi-tag `de+mobile`) on `x`, `maxWidth`, `texture`, `width`, `fill` | §3.6 |
 | `valid/core-custom-top-level.json` | Runtime/custom node with top-level custom fields and a decision map | §5, §3.6 |
+| `valid/core-custom-children.json` | Runtime/custom node carrying document-defined children | §5, §3.5 |
 | `valid/library-simple.json` | `prefabs` map, prefab instantiated twice, `level: "library"` | §12, §13 |
 | `valid/library-nested.json` | Prefab body references another prefab (transitive composition) | §13, §14 |
 | `valid/scene-modes.json` | Two scene modes, cross-mode identity by stable `id`, `level: "scene"` | §17, §18, §19 |
@@ -36,7 +37,6 @@ doc/fixtures/
 | `invalid/duplicate-ids.json` | Two sibling nodes share an `id` | §10 rule 5 |
 | `invalid/mask-out-of-tree.json` | `mask` references an `id` that is not in the tree | §10 rule 6 |
 | `invalid/non-composable-has-children.json` | `sprite` carries `children` | §10 rule 8 |
-| `invalid/runtime-has-children.json` | A runtime-registered type carries `children` | §10 rule 9 |
 | `invalid/intrinsic-has-props.json` | An intrinsic type carries legacy `props` | §10 rule 10 |
 | `invalid/custom-props.json` | Legacy runtime/custom node `props` payload is rejected; use top-level fields | §5 migration |
 | `invalid/decision-unsorted-selector.json` | Decision-map selector `mobile+de` is not lexicographically sorted | §10 rule 12 |

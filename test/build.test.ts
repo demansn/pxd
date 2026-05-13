@@ -164,6 +164,47 @@ test("validate: custom node props are rejected; use top-level fields", () => {
     );
 });
 
+test("build: custom node can own document-defined children", () => {
+    const doc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                {
+                    id: "panel",
+                    type: "Panel",
+                    title: "Menu",
+                    children: [
+                        { id: "caption", type: "container", x: 12 },
+                    ],
+                },
+            ],
+        },
+    };
+    let capturedTitle: unknown;
+    const panelType: NodeType = {
+        create: () => new Container(),
+        assign: (node) => {
+            capturedTitle = node.title;
+        },
+    };
+
+    const root = build(doc, {
+        resolve: resolveStub,
+        nodeTypes: new Map([["Panel", panelType]]),
+    });
+
+    const panel = find(root, "panel");
+    const caption = find(root, "panel.caption");
+    assert.equal(capturedTitle, "Menu");
+    assert.ok(panel);
+    assert.ok(caption);
+    assert.equal(panel?.children.length, 1);
+    assert.equal(caption?.x, 12);
+});
+
 test("build: rotation in degrees → radians (§6)", () => {
     const doc = {
         format: "pxd" as const,

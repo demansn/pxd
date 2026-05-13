@@ -175,7 +175,8 @@ function walk(
     }
     ids.add(node.id);
 
-    // §10 rule 8 — non-composable intrinsic MUST NOT have children
+    // §10 rule 8 — non-composable intrinsic MUST NOT have children.
+    // Custom/runtime nodes are composable; prefab references are checked below.
     if (NON_COMPOSABLE.has(node.type) && node.children !== undefined) {
         throw new ValidationError(
             "rule 8",
@@ -199,7 +200,6 @@ function walk(
     validateIntrinsicFields(node);
 
     const isPrefabRef = !INTRINSIC.has(node.type) && prefabNames.has(node.type);
-    const isRuntimeRef = !INTRINSIC.has(node.type) && !prefabNames.has(node.type);
 
     // §15 rule 19 — prefab references MUST NOT have children.
     // `props` is rejected globally above; prefab parameters are not part of this item.
@@ -212,13 +212,6 @@ function walk(
         }
     }
 
-    // §10 rule 9 — runtime-registered nodes MUST NOT have children (§3.5, §5 rule 4)
-    if (isRuntimeRef && node.children !== undefined) {
-        throw new ValidationError(
-            "rule 9",
-            `runtime-registered type '${node.type}' on node '${node.id}' must not have 'children'`,
-        );
-    }
 
     // mask — collect for post-walk check
     if (typeof node.mask === "string") {

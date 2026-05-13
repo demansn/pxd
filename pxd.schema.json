@@ -213,7 +213,8 @@
     "customNode": {
       "allOf": [{ "$ref": "#/$defs/baseNode" }],
       "properties": {
-        "type": { "type": "string", "minLength": 1 }
+        "type": { "type": "string", "minLength": 1 },
+        "children": { "type": "array", "items": { "$ref": "#/$defs/node" } }
       },
       "required": ["type"],
       "not": {
@@ -222,8 +223,7 @@
             "properties": { "type": { "$ref": "#/$defs/intrinsicTypeName" } },
             "required": ["type"]
           },
-          { "required": ["props"] },
-          { "required": ["children"] }
+          { "required": ["props"] }
         ]
       },
       "unevaluatedProperties": { "$ref": "#/$defs/customField" }

@@ -6,11 +6,11 @@
     "type": "container",
     "children": [
       {
-        "id": "spinBtn",
-        "type": "Button",
-        "text": "SPIN",
+        "id": "panel",
+        "type": "Panel",
+        "title": "Menu",
         "children": [
-          { "id": "icon", "type": "sprite", "texture": "spin_icon" }
+          { "id": "caption", "type": "text", "text": "PLAY" }
         ]
       }
     ]

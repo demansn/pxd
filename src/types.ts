@@ -136,7 +136,8 @@ export interface CustomNode extends BaseNode {
      * owned by the host-provided NodeType implementation.
      */
     [field: string]: unknown;
-    children?: never;
+    /** Custom/runtime nodes are composable Containers; prefab refs stay restricted by validation. */
+    children?: Node[];
 }
 
 export type IntrinsicNode =
