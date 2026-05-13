@@ -166,11 +166,11 @@ Identity is split into two concepts.
 
 ### 3.4 Anchor and pivot
 
-The base node does NOT define `anchorX`/`anchorY` or `pivotX`/`pivotY`. Pixi.js exposes these on different classes (anchor on `Sprite`/`Text`, pivot on `Container`). They are declared per intrinsic type in §4.
+The base node does NOT define `anchorX`/`anchorY` or `pivotX`/`pivotY`. Pixi.js exposes these on different classes (anchor on sprite/text-like leaves, pivot on `Container`). They are declared per intrinsic type in §4.
 
 ### 3.5 Composability
 
-Only composable node types may carry `children`. In Core, the only composable intrinsic type is `container`. Non-composable intrinsic types (`sprite`, `nineSliceSprite`, `text`, `graphics`, `slot`) MUST NOT have `children`.
+Only composable node types may carry `children`. In Core, the only composable intrinsic type is `container`. Non-composable intrinsic types (`sprite`, `nineSliceSprite`, `tilingSprite`, `animatedSprite`, `text`, `bitmapText`, `graphics`, `slot`) MUST NOT have `children`.
 
 Runtime/custom nodes (§5) MAY carry `children`; the created runtime object must be a container-like object that can receive children. The reader builds/applies those children after the custom node's `create`/`assign` and base fields.
 
@@ -208,7 +208,7 @@ A decision map is a JSON object satisfying all of:
 4. **Tie-break**: when several selectors match with equal specificity, the one declared first (JSON insertion order) wins.
 5. If no selector matches, the `"_"` value is used.
 
-**Scope.** Decision values are allowed at any field position where the underlying type is a primitive — base fields (`x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `label`), intrinsic-specific scalar fields (`text`, `maxWidth`, `width`, `height`, `leftWidth`, `topHeight`, `rightWidth`, `bottomHeight`, `anchorX`, `anchorY`, `pivotX`, `pivotY`, `texture`, `tint`, `radius`, `strokeWidth`, `shape`, `style`, `fill`, `stroke`, `slot`) and custom scalar top-level fields.
+**Scope.** Decision values are allowed at any field position where the underlying type is a primitive — base fields (`x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `label`), intrinsic-specific scalar fields (`text`, `maxWidth`, `width`, `height`, `leftWidth`, `topHeight`, `rightWidth`, `bottomHeight`, `tilePositionX`, `tilePositionY`, `tileScaleX`, `tileScaleY`, `tileRotation`, `applyAnchorToTexture`, `animationSpeed`, `loop`, `autoUpdate`, `updateAnchor`, `playing`, `anchorX`, `anchorY`, `pivotX`, `pivotY`, `texture`, `tint`, `radius`, `strokeWidth`, `shape`, `style`, `fill`, `stroke`, `slot`) and custom scalar top-level fields. For `animatedSprite`, the `textures` array itself is static and not decidable, but each texture id string may contain §7.2 bindings.
 
 Decision values are NOT permitted on:
 - `id`, `type` — identity must be static.
@@ -369,7 +369,95 @@ A scalable textured panel using Pixi v8 nine-slice scaling. Corners remain unsca
 
 `texture` follows the same opaque final-texture semantics as `sprite.texture`. For atlas subtextures, encode the subtexture key into the texture id and resolve it in the host's texture resolver.
 
-### 4.7 Spine and other engine-specific objects
+### 4.7 `tilingSprite`
+
+A repeated texture node backed by Pixi `TilingSprite`.
+
+```json
+{
+  "id": "bg",
+  "type": "tilingSprite",
+  "texture": "patterns/checker",
+  "width": 800,
+  "height": 600,
+  "tilePositionX": 0,
+  "tilePositionY": 16,
+  "tileScaleX": 2,
+  "tileScaleY": 2
+}
+```
+
+| Field | Type | Required | Default | Description |
+|---|---|---:|---|---|
+| `texture` | string | yes | — | Opaque texture identifier (§7) |
+| `width` | number | no | texture width | Tiling area width |
+| `height` | number | no | texture height | Tiling area height |
+| `tilePositionX` | number | no | 0 | X offset of the repeated texture |
+| `tilePositionY` | number | no | 0 | Y offset of the repeated texture |
+| `tileScaleX` | number | no | 1 | X scale of each tile |
+| `tileScaleY` | number | no | 1 | Y scale of each tile |
+| `tileRotation` | number | no | 0 | Tile rotation in degrees; converted to Pixi radians |
+| `applyAnchorToTexture` | boolean | no | false | Whether tile coordinates originate from the anchor |
+| `anchorX` | number | no | 0 | Anchor X in [0, 1] |
+| `anchorY` | number | no | 0 | Anchor Y in [0, 1] |
+
+`texture` follows the same opaque final-texture semantics as `sprite.texture`.
+
+### 4.8 `animatedSprite`
+
+A frame animation backed by Pixi `AnimatedSprite`.
+
+```json
+{
+  "id": "hero",
+  "type": "animatedSprite",
+  "textures": ["hero/walk_0", "hero/walk_1"],
+  "animationSpeed": 0.25,
+  "loop": true,
+  "playing": true
+}
+```
+
+| Field | Type | Required | Default | Description |
+|---|---|---:|---|---|
+| `textures` | string[] | yes | — | Non-empty frame texture ids resolved through the texture resolver |
+| `tint` | string/number | no | — | Optional tint |
+| `width` | number | no | — | Optional explicit display width |
+| `height` | number | no | — | Optional explicit display height |
+| `anchorX` | number | no | 0 | Anchor X in [0, 1] |
+| `anchorY` | number | no | 0 | Anchor Y in [0, 1] |
+| `animationSpeed` | number | no | Pixi default | Pixi animation speed multiplier |
+| `loop` | boolean | no | Pixi default | Whether playback loops |
+| `autoUpdate` | boolean | no | Pixi default | Whether `Ticker.shared` updates animation time |
+| `updateAnchor` | boolean | no | Pixi default | Whether frame default anchors update the sprite anchor |
+| `playing` | boolean | no | false on build; unchanged on apply | `true` calls `play()`, `false` calls `stop()` |
+
+This lightweight reader intentionally does not expose Pixi frame timing objects or callbacks. Use a custom `nodeTypes` entry for advanced animation runtime behavior.
+
+### 4.9 `bitmapText`
+
+A high-performance text node backed by Pixi `BitmapText`.
+
+```json
+{
+  "id": "score",
+  "type": "bitmapText",
+  "text": "Score: {score}",
+  "style": "score"
+}
+```
+
+| Field | Type | Required | Default | Description |
+|---|---|---:|---|---|
+| `text` | string | yes | — | Text content |
+| `style` | string | no | — | Style/font identifier resolved by the host |
+| `maxWidth` | number | no | — | Maximum display width via Pixi word wrap |
+| `anchorX` | number | no | 0 | Anchor X in [0, 1] |
+| `anchorY` | number | no | 0 | Anchor Y in [0, 1] |
+
+Bitmap font loading/installation is the host application's responsibility. The PXD node only selects text content and a style id.
+
+### 4.10 Spine and other engine-specific objects
 
 This lightweight Pixi reader does not define Spine as an intrinsic node type. Use a runtime/custom node type (§5), for example `type: "spine"`, and validate fields such as `skeleton`, `skin`, and `animation` in the host-provided `NodeType`.
 
@@ -531,7 +619,7 @@ A valid core-shape document satisfies all of the following:
 5. Within the tree, all `id` values are unique.
 6. Every `mask` value is the `id` of a node in the same tree.
 7. Intrinsic node types satisfy their type-specific required-field constraints (§4).
-8. Non-composable intrinsic types (`sprite`, `nineSliceSprite`, `text`, `graphics`, `slot`) MUST NOT have `children`.
+8. Non-composable intrinsic types (`sprite`, `nineSliceSprite`, `tilingSprite`, `animatedSprite`, `text`, `bitmapText`, `graphics`, `slot`) MUST NOT have `children`.
 9. Runtime/custom nodes MAY have `children`; prefab references are checked separately in §15.
 10. Nodes MUST NOT have legacy `props`; put custom fields directly on runtime/custom nodes (§5 rule 5).
 11. Every decision-map value (§3.6) has a `"_"` key.
@@ -562,7 +650,7 @@ A Core reader MUST:
 
 A Core reader MAY:
 
-- Support any subset of the optional intrinsic types `graphics`, `slot`, and `nineSliceSprite`.
+- Support any subset of the optional intrinsic types `graphics`, `slot`, `nineSliceSprite`, `tilingSprite`, `animatedSprite`, and `bitmapText`.
 - Treat `zIndex` as a sorting hint according to its own rules.
 - Expose semantic lookup by `label`.
 - Reject library-shape or scene-shape documents (Core does not support them).
