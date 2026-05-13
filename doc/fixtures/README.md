@@ -24,6 +24,7 @@ doc/fixtures/
 | `valid/core-decisions.json` | Decision-map values (`{_:100, mobile:50}`, multi-tag `de+mobile`) on `x`, `maxWidth`, `texture`, `width`, `fill` | §3.6 |
 | `valid/core-custom-top-level.json` | Runtime/custom node with top-level custom fields and a decision map | §5, §3.6 |
 | `valid/core-custom-children.json` | Runtime/custom node carrying document-defined children | §5, §3.5 |
+| `valid/core-custom-spine.json` | Spine-shaped node treated as a custom/runtime type, not a built-in intrinsic | §5 |
 | `valid/library-simple.json` | `prefabs` map, prefab instantiated twice, `level: "library"` | §12, §13 |
 | `valid/library-nested.json` | Prefab body references another prefab (transitive composition) | §13, §14 |
 | `valid/scene-modes.json` | Two scene modes, cross-mode identity by stable `id`, `level: "scene"` | §17, §18, §19 |

@@ -38,7 +38,7 @@ build(doc, { resolve, activeTags: ["de", "mobile"] });
 
 ### Fields that can be decision values
 
-Most scalar fields: `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `width`, `height`, `radius`, `anchorX`, `anchorY`, `tint`, `texture`, `text`, `style`, `fill`, `stroke`, `maxWidth`, `pivotX`, `pivotY`, `slot`, `skeleton`, `shape`.
+Most scalar fields: `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `width`, `height`, `radius`, `anchorX`, `anchorY`, `tint`, `texture`, `text`, `style`, `fill`, `stroke`, `maxWidth`, `pivotX`, `pivotY`, `slot`, `shape`. Custom scalar fields (for example fields on a custom Spine node) can also be decision values.
 
 Structural fields are **not** decidable (`id`, `type`, `mask`, `children`, `extensions`, `points`). Custom scalar fields are decidable because they live directly on the node. The validator rejects decision maps in structural slots.
 

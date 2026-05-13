@@ -89,7 +89,7 @@
       ]
     },
     "intrinsicTypeName": {
-      "enum": ["container", "sprite", "text", "graphics", "slot", "spine"]
+      "enum": ["container", "sprite", "text", "graphics", "slot"]
     },
     "baseNode": {
       "type": "object",
@@ -209,17 +209,6 @@
       "required": ["type", "slot"],
       "unevaluatedProperties": false
     },
-    "spineNode": {
-      "allOf": [{ "$ref": "#/$defs/baseNode" }],
-      "properties": {
-        "type":      { "const": "spine" },
-        "skeleton":  { "$ref": "#/$defs/decidableString" },
-        "skin":      { "$ref": "#/$defs/decidableString" },
-        "animation": { "$ref": "#/$defs/decidableString" }
-      },
-      "required": ["type", "skeleton"],
-      "unevaluatedProperties": false
-    },
     "customNode": {
       "allOf": [{ "$ref": "#/$defs/baseNode" }],
       "properties": {
@@ -245,7 +234,6 @@
         { "$ref": "#/$defs/textNode" },
         { "$ref": "#/$defs/graphicsNode" },
         { "$ref": "#/$defs/slotNode" },
-        { "$ref": "#/$defs/spineNode" },
         { "$ref": "#/$defs/customNode" }
       ]
     },

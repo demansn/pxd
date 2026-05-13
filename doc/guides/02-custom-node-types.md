@@ -1,6 +1,8 @@
 # Custom node types
 
-The default registry (`defaultNodeTypes`) covers intrinsic types: `container`, `sprite`, `text`, `graphics`, `slot`. Anything else in a doc — `"type": "SpinButton"`, `"type": "ProgressBar"` — needs a `NodeType` registered by the host.
+The default registry (`defaultNodeTypes`) covers intrinsic types: `container`, `sprite`, `text`, `graphics`, `slot`. Anything else in a doc — `"type": "SpinButton"`, `"type": "ProgressBar"`, `"type": "spine"` — needs a `NodeType` registered by the host.
+
+Spine/game objects are intentionally not built-ins in this package. Register them as custom `nodeTypes` so your engine owns the Spine runtime dependency and field semantics.
 
 ## The `NodeType` contract
 

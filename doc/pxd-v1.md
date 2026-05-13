@@ -170,7 +170,7 @@ The base node does NOT define `anchorX`/`anchorY` or `pivotX`/`pivotY`. Pixi.js 
 
 ### 3.5 Composability
 
-Only composable node types may carry `children`. In Core, the only composable intrinsic type is `container`. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`, `spine`) MUST NOT have `children`.
+Only composable node types may carry `children`. In Core, the only composable intrinsic type is `container`. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`) MUST NOT have `children`.
 
 Runtime/custom nodes (§5) MAY carry `children`; the created runtime object must be a container-like object that can receive children. The reader builds/applies those children after the custom node's `create`/`assign` and base fields.
 
@@ -208,14 +208,13 @@ A decision map is a JSON object satisfying all of:
 4. **Tie-break**: when several selectors match with equal specificity, the one declared first (JSON insertion order) wins.
 5. If no selector matches, the `"_"` value is used.
 
-**Scope.** Decision values are allowed at any field position where the underlying type is a primitive — base fields (`x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `label`), intrinsic-specific scalar fields (`text`, `maxWidth`, `width`, `height`, `anchorX`, `anchorY`, `pivotX`, `pivotY`, `texture`, `tint`, `radius`, `strokeWidth`, `shape`, `style` when string, `fill` when string, `stroke` when string, `slot`, `skeleton`, `skin`, `animation`).
+**Scope.** Decision values are allowed at any field position where the underlying type is a primitive — base fields (`x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `label`), intrinsic-specific scalar fields (`text`, `maxWidth`, `width`, `height`, `anchorX`, `anchorY`, `pivotX`, `pivotY`, `texture`, `tint`, `radius`, `strokeWidth`, `shape`, `style`, `fill`, `stroke`, `slot`) and custom scalar top-level fields.
 
 Decision values are NOT permitted on:
 - `id`, `type` — identity must be static.
 - `mask` — mask target must be statically known for forward-reference resolution.
 - `children` — structural variation belongs in `modes` (Part III), not in decision values.
 - `extensions` — extension payloads are objects, not scalar decision values.
-- Inline style/fill/stroke objects — when the field carries an object form, decision values cannot wrap the object. Producers SHOULD use a style id (string) and let the style resolver vary the underlying object.
 
 **Bindings (§7.2) interaction.** A decision map's leaf string values MAY themselves contain bindings; resolution order is: pick decision leaf → resolve bindings → hand to typed resolver. Bindings inside a selector key (the tag string itself) are NOT supported.
 
@@ -338,27 +337,9 @@ A named mount point where a runtime may place external content (another tree, a 
 
 A slot is a passive placeholder — mounting semantics are runtime-defined. Slots replace naming conventions such as `_ph` suffixes.
 
-### 4.6 `spine`
+### 4.6 Spine and other engine-specific objects
 
-A Spine skeletal animation node.
-
-```json
-{
-  "id": "zeus",
-  "type": "spine",
-  "skeleton": "zeus",
-  "skin": "default",
-  "animation": "idle"
-}
-```
-
-| Field | Type | Required | Description |
-|---|---|---:|---|
-| `skeleton` | string | yes | Opaque skeleton identifier (§7) |
-| `skin` | string | no | Initial skin name |
-| `animation` | string | no | Default animation name |
-
-A Core reader is not required to ship Spine support; see §11 conformance.
+This lightweight Pixi reader does not define Spine as an intrinsic node type. Use a runtime/custom node type (§5), for example `type: "spine"`, and validate fields such as `skeleton`, `skin`, and `animation` in the host-provided `NodeType`.
 
 ---
 
@@ -518,7 +499,7 @@ A valid core-shape document satisfies all of the following:
 5. Within the tree, all `id` values are unique.
 6. Every `mask` value is the `id` of a node in the same tree.
 7. Intrinsic node types satisfy their type-specific required-field constraints (§4).
-8. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`, `spine`) MUST NOT have `children`.
+8. Non-composable intrinsic types (`sprite`, `text`, `graphics`, `slot`) MUST NOT have `children`.
 9. Runtime/custom nodes MAY have `children`; prefab references are checked separately in §15.
 10. Nodes MUST NOT have legacy `props`; put custom fields directly on runtime/custom nodes (§5 rule 5).
 11. Every decision-map value (§3.6) has a `"_"` key.
@@ -549,7 +530,7 @@ A Core reader MUST:
 
 A Core reader MAY:
 
-- Support any subset of the optional intrinsic types `graphics`, `slot`, `spine`.
+- Support any subset of the optional intrinsic types `graphics` and `slot`.
 - Treat `zIndex` as a sorting hint according to its own rules.
 - Expose semantic lookup by `label`.
 - Reject library-shape or scene-shape documents (Core does not support them).

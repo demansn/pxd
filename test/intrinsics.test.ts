@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { Container, Sprite, Text, Texture, type Graphics } from "pixi.js";
 
 import { build } from "../src/build.js";
-import type { Resolvers } from "../src/context.js";
+import type { NodeType, Resolvers } from "../src/context.js";
 import type { ResolvedNode } from "../src/types.js";
 import { drawShape } from "../src/nodeTypes.js";
 import { validate, ValidationError } from "../src/validate.js";
@@ -251,4 +251,26 @@ test("validate: graphics rejects shape-specific no-op fields for literal shapes"
             && error.rule === "rule 7"
             && /field 'radius'.*not used by graphics shape 'rect'/.test(error.message),
     );
+});
+
+test("spine is a custom node type, not an intrinsic with required skeleton fields", () => {
+    let capturedAnimation: unknown;
+    const spineType: NodeType = {
+        create: () => new Container(),
+        assign: (node) => {
+            capturedAnimation = node.animation;
+        },
+    };
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: { id: "hero", type: "spine", animation: "idle" },
+    }, {
+        resolve: resolveStub,
+        nodeTypes: new Map([["spine", spineType]]),
+    });
+
+    assert.equal(root.label, "hero");
+    assert.equal(capturedAnimation, "idle");
 });

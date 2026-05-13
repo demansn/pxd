@@ -17,9 +17,9 @@ export class ValidationError extends Error {
 }
 
 /** Intrinsic type names (§4). */
-const INTRINSIC = new Set(["container", "sprite", "text", "graphics", "slot", "spine"]);
+const INTRINSIC = new Set(["container", "sprite", "text", "graphics", "slot"]);
 /** Intrinsic types that MUST NOT have children (§10 rule 8). */
-const NON_COMPOSABLE = new Set(["sprite", "text", "graphics", "slot", "spine"]);
+const NON_COMPOSABLE = new Set(["sprite", "text", "graphics", "slot"]);
 
 /**
  * Extension identifiers this reader implementation supports.
@@ -326,7 +326,6 @@ const intrinsicAllowedFields: Record<string, ReadonlySet<string>> = {
     text: new Set([...COMMON_NODE_FIELDS, "text", "style", "maxWidth", "anchorX", "anchorY"]),
     graphics: new Set([...COMMON_NODE_FIELDS, "shape", "width", "height", "radius", "points", "fill", "stroke", "strokeWidth"]),
     slot: new Set([...COMMON_NODE_FIELDS, "slot", "width", "height"]),
-    spine: new Set([...COMMON_NODE_FIELDS, "skeleton", "skin", "animation"]),
 };
 
 type FieldCheck = (v: unknown) => boolean;
@@ -357,7 +356,6 @@ const intrinsicSpecs: Record<string, FieldSpec[]> = {
     sprite: [{ name: "texture", check: isNonEmptyStr, label: "string" }],
     text: [{ name: "text", check: isString, label: "string" }],
     slot: [{ name: "slot", check: isNonEmptyStr, label: "string" }],
-    spine: [{ name: "skeleton", check: isNonEmptyStr, label: "string" }],
 };
 
 const optionalIntrinsicSpecs: Record<string, FieldSpec[]> = {

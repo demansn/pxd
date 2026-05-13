@@ -1,0 +1,11 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "hero",
+    "type": "spine",
+    "skeleton": "heroSkeleton",
+    "skin": "default",
+    "animation": "idle"
+  }
+}

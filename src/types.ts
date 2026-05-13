@@ -116,14 +116,6 @@ export interface SlotNode extends BaseNode {
     children?: never;
 }
 
-export interface SpineNode extends BaseNode {
-    type: "spine";
-    skeleton: Decidable<string>;
-    skin?: Decidable<string>;
-    animation?: Decidable<string>;
-    children?: never;
-}
-
 export interface CustomNode extends BaseNode {
     type: string;
     /**
@@ -140,8 +132,7 @@ export type IntrinsicNode =
     | SpriteNode
     | TextNode
     | GraphicsNode
-    | SlotNode
-    | SpineNode;
+    | SlotNode;
 
 export type Node = IntrinsicNode | CustomNode;
 
