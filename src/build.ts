@@ -27,6 +27,16 @@ export interface BuildOptions {
     activeTags?: Iterable<string>;
 }
 
+interface BuildSubtreeState {
+    nodeTypes: ReadonlyMap<string, NodeType>;
+    activeTags: ReadonlySet<string>;
+    readString: (s: string) => string;
+    buildCtx: BuildContext;
+    assignCtx: AssignContext;
+    idMap: Map<string, Container> | null;
+    pendingMasks: Array<[Container, string]>;
+}
+
 /** Validate (Core+Library) and build a fresh Pixi tree. */
 export function build(doc: unknown, options: BuildOptions): Container {
     const validated = validate(doc);
@@ -59,48 +69,67 @@ function buildSubtree(
     nodeTypes: ReadonlyMap<string, NodeType>,
     options: BuildOptions,
 ): Container {
+    const state = createBuildSubtreeState(root, nodeTypes, options);
+    const out = buildNode(root, state);
+    bindPendingMasks(state);
+    return out;
+}
+
+function createBuildSubtreeState(
+    root: Node,
+    nodeTypes: ReadonlyMap<string, NodeType>,
+    options: BuildOptions,
+): BuildSubtreeState {
     const activeTags = new Set(options.activeTags ?? []);
     const readString = makeStringReader(options.resolve.binding);
-    const hasMasks = docContainsMask(root);
-    const idMap = hasMasks ? new Map<string, Container>() : null;
-    const pendingMasks: Array<[Container, string]> = [];
+    const idMap = docContainsMask(root) ? new Map<string, Container>() : null;
+    return {
+        nodeTypes,
+        activeTags,
+        readString,
+        buildCtx: { resolve: options.resolve, readString },
+        assignCtx: { resolve: options.resolve, readString, idMap: EMPTY_ID_MAP },
+        idMap,
+        pendingMasks: [],
+    };
+}
 
-    const buildCtx: BuildContext = { resolve: options.resolve, readString };
-    const assignCtx: AssignContext = { resolve: options.resolve, readString, idMap: EMPTY_ID_MAP };
-
-    function buildNode(node: Node): Container {
-        const resolved = resolveNodeFields(node, activeTags);
-        const type = nodeTypes.get(resolved.type);
-        if (!type) {
-            throw new Error(
-                `no node type registered for '${resolved.type}' on node '${resolved.id}'`,
-            );
-        }
-        const obj = type.create(resolved, buildCtx);
-        // Order: type-specific (assign) → universal transform (applyBaseFields).
-        // Base fields run last so `scaleX` overrides `width`-derived scale on Sprite, etc.
-        type.assign?.(resolved, obj, assignCtx);
-        applyBaseFields(obj, resolved);
-        tagNode(obj, resolved, readString);
-        if (idMap) idMap.set(resolved.id as string, obj);
-        if (typeof resolved.mask === "string") {
-            pendingMasks.push([obj, resolved.mask]);
-        }
-        const children = resolved.children as ResolvedNode[] | undefined;
-        if (Array.isArray(children)) {
-            for (const child of children) obj.addChild(buildNode(child as Node));
-        }
-        return obj;
+function buildNode(node: Node, state: BuildSubtreeState): Container {
+    const resolved = resolveNodeFields(node, state.activeTags);
+    const type = state.nodeTypes.get(resolved.type);
+    if (!type) {
+        throw new Error(
+            `no node type registered for '${resolved.type}' on node '${resolved.id}'`,
+        );
     }
+    const obj = type.create(resolved, state.buildCtx);
+    // Order: type-specific (assign) → universal transform (applyBaseFields).
+    // Base fields run last so `scaleX` overrides `width`-derived scale on Sprite, etc.
+    type.assign?.(resolved, obj, state.assignCtx);
+    applyBaseFields(obj, resolved);
+    tagNode(obj, resolved, state.readString);
+    rememberNodeForMasks(obj, resolved, state);
+    addBuiltChildren(obj, resolved, state);
+    return obj;
+}
 
-    const out = buildNode(root);
+function rememberNodeForMasks(obj: Container, node: ResolvedNode, state: BuildSubtreeState): void {
+    if (state.idMap) state.idMap.set(node.id as string, obj);
+    if (typeof node.mask === "string") state.pendingMasks.push([obj, node.mask]);
+}
 
-    for (const [target, maskId] of pendingMasks) {
-        const mask = idMap?.get(maskId);
+function addBuiltChildren(parent: Container, node: ResolvedNode, state: BuildSubtreeState): void {
+    const children = node.children as Node[] | undefined;
+    if (!Array.isArray(children)) return;
+    for (const child of children) parent.addChild(buildNode(child, state));
+}
+
+function bindPendingMasks(state: BuildSubtreeState): void {
+    for (const [target, maskId] of state.pendingMasks) {
+        const mask = state.idMap?.get(maskId);
         if (!mask) throw new Error(`mask '${maskId}' not found in tree`);
         target.mask = mask;
     }
-    return out;
 }
 
 /**
