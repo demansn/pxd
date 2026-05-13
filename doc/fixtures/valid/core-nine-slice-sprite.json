@@ -1,0 +1,18 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "level": "core",
+  "root": {
+    "id": "panel",
+    "type": "nineSliceSprite",
+    "texture": "ui/panel",
+    "width": 320,
+    "height": 120,
+    "leftWidth": 12,
+    "topHeight": 14,
+    "rightWidth": 16,
+    "bottomHeight": 18,
+    "anchorX": 0.5,
+    "anchorY": 0.5
+  }
+}

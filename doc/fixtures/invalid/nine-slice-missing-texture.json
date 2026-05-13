@@ -1,0 +1,10 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": {
+    "id": "panel",
+    "type": "nineSliceSprite",
+    "width": 320,
+    "height": 120
+  }
+}
