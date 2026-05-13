@@ -51,6 +51,61 @@ test("apply: patches x on existing label-path match", () => {
     assert.equal(find(root, "bg")?.x, 250);
 });
 
+test("apply: absent base fields leave existing values unchanged", () => {
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: { id: "root", type: "container", x: 10, alpha: 0.4 },
+    };
+    const root = build(buildDoc, { resolve: resolveStub });
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: { id: "root", type: "container", y: 20 },
+    };
+
+    const count = apply(patchDoc, root);
+
+    assert.equal(count, 1);
+    assert.equal(root.x, 10, "absent x is not reset");
+    assert.equal(root.y, 20, "present y is patched");
+    assert.equal(root.alpha, 0.4, "absent alpha is not reset");
+});
+
+test("apply: absent live child is not removed", () => {
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                { id: "kept", type: "container", x: 1 },
+                { id: "extra", type: "container", x: 2 },
+            ],
+        },
+    };
+    const root = build(buildDoc, { resolve: resolveStub });
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [{ id: "kept", type: "container", x: 10 }],
+        },
+    };
+
+    const count = apply(patchDoc, root);
+
+    assert.equal(count, 2, "patched root + kept only");
+    assert.equal(root.children.length, 2, "extra live child remains attached");
+    assert.equal(find(root, "kept")?.x, 10);
+    assert.equal(find(root, "extra")?.x, 2);
+});
+
 test("apply: walks children of custom nodes", () => {
     const panelType: NodeType = {
         create: () => new Container(),
@@ -174,6 +229,81 @@ test("apply: missing PXD node calls onMissing and continues", () => {
     assert.equal(missed[0].nodeId, "ghost");
     assert.equal(missed[0].path, "root.ghost");
     assert.equal(find(root, "a")?.x, 10);
+});
+
+test("apply: absent root label does not reset existing label", () => {
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: { id: "root", label: "RootLabel", type: "container", x: 1 },
+    };
+    const root = build(buildDoc, { resolve: resolveStub });
+    assert.equal(root.label, "RootLabel");
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: { id: "root", type: "container", x: 2 },
+    };
+
+    apply(patchDoc, root);
+
+    assert.equal(root.x, 2);
+    assert.equal(root.label, "RootLabel", "missing label field is patch-only, not label=id reset");
+});
+
+test("apply: explicit root label patches root label", () => {
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: { id: "root", label: "OldRoot", type: "container" },
+    };
+    const root = build(buildDoc, { resolve: resolveStub });
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: { id: "root", label: "NewRoot", type: "container" },
+    };
+
+    apply(patchDoc, root);
+
+    assert.equal(root.label, "NewRoot");
+});
+
+test("apply: child label rename is treated as missing and skipped", () => {
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [{ id: "item", label: "oldLabel", type: "container", x: 1 }],
+        },
+    };
+    const root = build(buildDoc, { resolve: resolveStub });
+    const item = find(root, "oldLabel")!;
+    const missed: Array<{ path: string; nodeId: string }> = [];
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [{ id: "item", label: "newLabel", type: "container", x: 99 }],
+        },
+    };
+
+    const count = apply(patchDoc, root, {
+        onMissing: (path, nodeId) => missed.push({ path, nodeId }),
+    });
+
+    assert.equal(count, 1, "only root patched; renamed child was skipped");
+    assert.deepEqual(missed, [{ path: "root.newLabel", nodeId: "item" }]);
+    assert.equal(item.label, "oldLabel");
+    assert.equal(item.x, 1, "subtree under missing label is not patched");
+    assert.equal(find(root, "newLabel"), null);
 });
 
 test("apply: type-mismatch silent skip of type-specific fields, base fields still flow", () => {
@@ -321,6 +451,72 @@ test("apply: mask rebound by id lookup in existing tree", () => {
     };
     apply(patchDoc, root);
     assert.equal(panel.mask, mask2, "mask rebound to mask2 by id");
+});
+
+test("apply: absent mask field keeps existing mask", () => {
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                { id: "mask1", type: "container" },
+                { id: "panel", type: "container", mask: "mask1" },
+            ],
+        },
+    };
+    const root = build(buildDoc, { resolve: resolveStub });
+    const panel = find(root, "panel")!;
+    const mask1 = find(root, "mask1")!;
+    assert.equal(panel.mask, mask1);
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [{ id: "panel", type: "container", x: 5 }],
+        },
+    };
+
+    apply(patchDoc, root);
+
+    assert.equal(panel.mask, mask1, "missing mask field does not clear live mask");
+    assert.equal(panel.x, 5);
+});
+
+test("apply: unresolved mask id keeps existing mask", () => {
+    const buildDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [
+                { id: "mask1", type: "container" },
+                { id: "panel", type: "container", mask: "mask1" },
+            ],
+        },
+    };
+    const root = build(buildDoc, { resolve: resolveStub });
+    const panel = find(root, "panel")!;
+    const mask1 = find(root, "mask1")!;
+
+    const patchDoc = {
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "root",
+            type: "container",
+            children: [{ id: "panel", type: "container", mask: "ghostMask" }],
+        },
+    };
+
+    apply(patchDoc, root);
+
+    assert.equal(panel.mask, mask1, "unknown mask id is a no-op in apply");
 });
 
 test("apply: scene-shape doc is rejected (out of scope)", () => {
