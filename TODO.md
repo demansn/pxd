@@ -123,6 +123,7 @@
 - [x] Prefabs example.
 - [x] Проверять examples в build/CI.
 - [x] Decisions/bindings example для core resolution сценариев.
+- [x] Подружить examples с docs: каждый пример экспортирует `mountDemo(target)` и рендерится живьём в `docs/index.html`.
 
 ## 10. CI / качество
 
@@ -134,12 +135,13 @@
 
 ## 11. Документация
 
-- [ ] README переписать вокруг нового mental model: маленький API + `nodeTypes` как расширение.
-- [ ] Guides обновить под custom top-level fields и custom children.
-- [ ] В docs явно описать reserved base fields.
-- [ ] В docs явно описать patch semantics `apply()`.
-- [ ] В docs явно описать, что custom fields валидирует пользователь/движок.
-- [ ] В docs не обещать extensions/reconcile/full apply до реализации.
+- [x] README переписать вокруг нового mental model: маленький API + `nodeTypes` как расширение.
+- [x] Guides обновить под custom top-level fields и custom children.
+- [x] В docs явно описать reserved base fields.
+- [x] В docs явно описать patch semantics `apply()`.
+- [x] В docs явно описать, что custom fields валидирует пользователь/движок.
+- [x] В docs не обещать extensions/reconcile/full apply до реализации.
+- [x] Свести README, гайды и примеры в одну страницу `docs/index.html` с навигацией и live-demo каждого примера.
 
 ## 12. Будущее, не минимум
 
