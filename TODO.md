@@ -67,7 +67,7 @@
   - [x] `slot`: реализованы/описаны `width` и `height` через стабильный empty-slot bounds.
 - [x] Решить судьбу `spine`: убран из default intrinsic support и оставлен через custom `nodeTypes`.
 - [ ] Затем расширить PXD v1 intrinsic набор практичными Pixi v8 типами:
-  - [ ] `nineSliceSprite`.
+  - [x] `nineSliceSprite`.
   - [ ] `tilingSprite`.
   - [ ] `animatedSprite`.
   - [ ] `bitmapText`.

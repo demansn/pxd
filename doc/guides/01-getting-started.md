@@ -46,7 +46,7 @@ title.text = "Hello, player";
 - A `Container` tree mirroring the doc.
 - Every node's `label` set to the doc's `id` (or explicit `label`).
 - `x/y/scale/rotation/alpha/visible/zIndex` applied per node.
-- Type-specific fields: `texture` for sprites, `text+style+maxWidth` for text, strict `shape+fill+stroke` for graphics, mount points for slots.
+- Type-specific fields: `texture` for sprites and nine-slice sprites, `text+style+maxWidth` for text, strict `shape+fill+stroke` for graphics, mount points for slots.
 - Engine-specific objects (for example Spine) stay small and explicit via custom `nodeTypes`, not built-ins.
 
 ## Next steps

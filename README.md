@@ -85,7 +85,9 @@ apply(updatedDoc, root, {
 
 ## Extension points
 
-A single registry of `NodeType { create, assign }` strategies — used by both `build` and `apply`. The default registry is `defaultNodeTypes` for the strict built-ins (`container`, `sprite`, `text`, `graphics`, `slot`); override by passing `nodeTypes` to either call. Engine-specific objects such as Spine belong here as custom node types, not in the intrinsic set.
+A single registry of `NodeType { create, assign }` strategies — used by both `build` and `apply`. The default registry is `defaultNodeTypes` for the strict built-ins (`container`, `sprite`, `nineSliceSprite`, `text`, `graphics`, `slot`); override by passing `nodeTypes` to either call. Engine-specific objects such as Spine belong here as custom node types, not in the intrinsic set.
+
+`nineSliceSprite` is available for scalable Pixi UI panels and uses the same `texture` resolver as `sprite`.
 
 Custom node fields live directly on the node. Reserved structural/base fields are `id`, `type`, `label`, `x`, `y`, `scaleX`, `scaleY`, `rotation`, `alpha`, `visible`, `zIndex`, `mask`, `children`, and `extensions`; do not reuse those names for custom semantics. `children` is structural: the library builds/applies it, not your `assign` function.
 
@@ -153,6 +155,7 @@ pxd/
 - **Decision values (§3.6):** active-tag set, lexicographic selector validation, declaration-order tie-break.
 - **String bindings (§7.2):** `{path}` substitution, `\{` and `\\` escapes, no rescanning.
 - **Masks (§8):** forward references resolved in two passes; apply rebinds by id against existing tree.
+- **Nine-slice sprites (§4.6):** scalable Pixi UI panels with `texture`, border widths, display size, and anchor fields.
 - **Slots (§4.5):** symbol-tagged containers; `mountSlot` / `getSlot` find them by `slot` field.
 - **Runtime-registered/custom types (§5):** add custom `NodeType { create, assign }` via `options.nodeTypes`; custom nodes may carry document-defined `children` and are traversed like containers.
 
@@ -183,7 +186,7 @@ npm test
 
 - `test/fixtures.test.ts` — every `valid/core-*` and `valid/library-*` fixture validates; every `invalid/*` rejects with the right rule; `valid/scene-*` rejected as out-of-scope.
 - `test/build.test.ts` — decisions, bindings, prefab scope, custom node types, rotation, mask wiring.
-- `test/intrinsics.test.ts` — strict built-in Pixi semantics for container/slot/sprite/text/graphics and custom Spine registration.
+- `test/intrinsics.test.ts` — strict built-in Pixi semantics for container/slot/sprite/nineSliceSprite/text/graphics and custom Spine registration.
 - `test/apply.test.ts` — match, missing, type-mismatch, re-resolve decisions/bindings, mask rebind, scene reject.
 - `test/find.test.ts` — dot-path, findAll, requirePath throws.
 - `test/slots.test.ts` — getSlot by symbol, mountSlot adds child, throw on missing slot.
