@@ -8,9 +8,21 @@
  * mutating `scale` on Sprite).
  */
 
-import { Container, Graphics, NineSliceSprite, Sprite, Text, Texture } from "pixi.js";
+import {
+    AnimatedSprite,
+    BitmapText,
+    Container,
+    Graphics,
+    NineSliceSprite,
+    Sprite,
+    Text,
+    Texture,
+    TilingSprite,
+} from "pixi.js";
 import type { AssignContext, NodeType } from "./context.js";
 import type { ResolvedNode } from "./types.js";
+
+const DEG_TO_RAD = Math.PI / 180;
 
 /** Empty mount point whose document area is readable even before content is mounted. */
 export class SlotContainer extends Container {
@@ -34,8 +46,10 @@ export class SlotContainer extends Container {
     }
 }
 
+type Anchorable = Sprite | Text | NineSliceSprite | TilingSprite | BitmapText;
+
 /** Apply `anchorX` / `anchorY` from a node to any object that has a Pixi `anchor`. */
-export function setAnchorFromNode(target: Sprite | Text | NineSliceSprite, node: ResolvedNode): void {
+export function setAnchorFromNode(target: Anchorable, node: ResolvedNode): void {
     if (node.anchorX === undefined && node.anchorY === undefined) return;
     target.anchor.set(
         (node.anchorX as number | undefined) ?? 0,
@@ -72,7 +86,7 @@ function resolveTextStyle(node: ResolvedNode, ctx: AssignContext): object | unde
     return ctx.resolve.style?.(ctx.readString(node.style));
 }
 
-function applyTextMaxWidth(node: ResolvedNode, target: Text): void {
+function applyTextMaxWidth(node: ResolvedNode, target: Text | BitmapText): void {
     if (typeof node.maxWidth !== "number") return;
     target.style.wordWrap = true;
     target.style.wordWrapWidth = node.maxWidth;
@@ -100,10 +114,82 @@ const nineSliceSprite: NodeType = {
     },
 };
 
+function assignTilingSpriteTileFields(node: ResolvedNode, target: TilingSprite): void {
+    if (typeof node.tilePositionX === "number") target.tilePosition.x = node.tilePositionX;
+    if (typeof node.tilePositionY === "number") target.tilePosition.y = node.tilePositionY;
+    if (typeof node.tileScaleX === "number") target.tileScale.x = node.tileScaleX;
+    if (typeof node.tileScaleY === "number") target.tileScale.y = node.tileScaleY;
+    if (typeof node.tileRotation === "number") target.tileRotation = node.tileRotation * DEG_TO_RAD;
+    if (typeof node.applyAnchorToTexture === "boolean") {
+        target.applyAnchorToTexture = node.applyAnchorToTexture;
+    }
+}
+
+const tilingSprite: NodeType = {
+    create: () => new TilingSprite({ texture: Texture.EMPTY }),
+    assign: (node, target, ctx) => {
+        if (!(target instanceof TilingSprite)) return;
+        if (typeof node.texture === "string" && ctx.resolve.texture) {
+            target.texture = ctx.resolve.texture(ctx.readString(node.texture));
+        }
+        if (typeof node.width === "number") target.width = node.width;
+        if (typeof node.height === "number") target.height = node.height;
+        assignTilingSpriteTileFields(node, target);
+        setAnchorFromNode(target, node);
+    },
+};
+
+function resolveAnimationTextures(node: ResolvedNode, ctx: AssignContext): Texture[] | undefined {
+    const ids = node.textures;
+    const resolveTexture = ctx.resolve.texture;
+    if (!Array.isArray(ids) || !resolveTexture) return undefined;
+    return ids.map((id) => resolveTexture(ctx.readString(id as string)));
+}
+
+function assignAnimatedSpritePlaybackFields(node: ResolvedNode, target: AnimatedSprite): void {
+    if (typeof node.animationSpeed === "number") target.animationSpeed = node.animationSpeed;
+    if (typeof node.loop === "boolean") target.loop = node.loop;
+    if (typeof node.autoUpdate === "boolean") target.autoUpdate = node.autoUpdate;
+    if (typeof node.updateAnchor === "boolean") target.updateAnchor = node.updateAnchor;
+    if (typeof node.playing === "boolean") {
+        if (node.playing) target.play();
+        else target.stop();
+    }
+}
+
+const animatedSprite: NodeType = {
+    create: () => new AnimatedSprite([Texture.EMPTY]),
+    // Order matters: textures before width/height; playback fields last.
+    assign: (node, target, ctx) => {
+        if (!(target instanceof AnimatedSprite)) return;
+        const textures = resolveAnimationTextures(node, ctx);
+        if (textures) target.textures = textures;
+        if (typeof node.width === "number") target.width = node.width;
+        if (typeof node.height === "number") target.height = node.height;
+        if (node.tint !== undefined) target.tint = node.tint as number | string;
+        setAnchorFromNode(target, node);
+        assignAnimatedSpritePlaybackFields(node, target);
+    },
+};
+
 const text: NodeType = {
     create: () => new Text(),
     assign: (node, target, ctx) => {
         if (!(target instanceof Text)) return;
+        if (typeof node.text === "string") {
+            target.text = ctx.readString(node.text);
+        }
+        const style = resolveTextStyle(node, ctx);
+        if (style) Object.assign(target.style, style);
+        applyTextMaxWidth(node, target);
+        setAnchorFromNode(target, node);
+    },
+};
+
+const bitmapText: NodeType = {
+    create: () => new BitmapText(),
+    assign: (node, target, ctx) => {
+        if (!(target instanceof BitmapText)) return;
         if (typeof node.text === "string") {
             target.text = ctx.readString(node.text);
         }
@@ -179,7 +265,10 @@ export const defaultNodeTypes: ReadonlyMap<string, NodeType> = new Map<string, N
     ["container", container],
     ["sprite", sprite],
     ["nineSliceSprite", nineSliceSprite],
+    ["tilingSprite", tilingSprite],
+    ["animatedSprite", animatedSprite],
     ["text", text],
+    ["bitmapText", bitmapText],
     ["graphics", graphics],
     ["slot", slot],
 ]);
