@@ -8,7 +8,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Container, NineSliceSprite, Texture } from "pixi.js";
+import { AnimatedSprite, BitmapText, Container, NineSliceSprite, Texture, TilingSprite } from "pixi.js";
 
 import { apply } from "../src/apply.js";
 import { build } from "../src/build.js";
@@ -16,6 +16,31 @@ import type { NodeType, Resolvers } from "../src/context.js";
 import { find } from "../src/find.js";
 
 const resolveStub: Resolvers = { texture: () => ({}) as never };
+
+class FakeCanvasRenderingContext2D {
+    font = "";
+    letterSpacing = "0px";
+
+    measureText(value: string): TextMetrics {
+        return {
+            width: value.length * 10,
+            actualBoundingBoxAscent: 10,
+            actualBoundingBoxDescent: 2,
+            fontBoundingBoxAscent: 10,
+            fontBoundingBoxDescent: 2,
+        } as TextMetrics;
+    }
+}
+
+function installTextCanvasShim(): void {
+    const globals = globalThis as unknown as Record<string, unknown>;
+    globals.CanvasRenderingContext2D ??= FakeCanvasRenderingContext2D;
+    globals.document ??= {
+        createElement: () => ({
+            getContext: () => new FakeCanvasRenderingContext2D(),
+        }),
+    };
+}
 
 // Stub node types: Container instead of Sprite/Text so we can run in Node
 // without a canvas. Apply will then see Container, not Sprite — type-specific
@@ -289,6 +314,185 @@ test("apply: patches nineSliceSprite type-specific fields", () => {
     assert.equal(root.anchor.x, 0.5);
     assert.equal(root.anchor.y, 1);
     assert.equal(root.x, 30, "base fields still apply after type-specific assign");
+});
+
+test("apply: patches tilingSprite type-specific fields", () => {
+    const oldTexture = Texture.EMPTY;
+    const newTexture = Texture.WHITE;
+    const textureCalls: string[] = [];
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "bg",
+            type: "tilingSprite",
+            texture: "oldBg",
+            width: 100,
+            height: 80,
+            tilePositionX: 1,
+            tilePositionY: 2,
+        },
+    }, { resolve: { texture: () => oldTexture } });
+
+    assert.ok(root instanceof TilingSprite);
+
+    const count = apply({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "bg",
+            type: "tilingSprite",
+            texture: "newBg",
+            width: 300,
+            height: 200,
+            tilePositionX: 11,
+            tilePositionY: 22,
+            tileScaleX: 2,
+            tileScaleY: 3,
+            tileRotation: 180,
+            applyAnchorToTexture: true,
+            anchorX: 0.5,
+            anchorY: 1,
+            x: 40,
+        },
+    }, root, {
+        resolve: {
+            texture: (id) => {
+                textureCalls.push(id);
+                return newTexture;
+            },
+        },
+    });
+
+    assert.equal(count, 1);
+    assert.deepEqual(textureCalls, ["newBg"]);
+    assert.equal(root.texture, newTexture);
+    assert.equal(root.width, 300);
+    assert.equal(root.height, 200);
+    assert.equal(root.tilePosition.x, 11);
+    assert.equal(root.tilePosition.y, 22);
+    assert.equal(root.tileScale.x, 2);
+    assert.equal(root.tileScale.y, 3);
+    assert.ok(Math.abs(root.tileRotation - Math.PI) < 1e-9);
+    assert.equal(root.applyAnchorToTexture, true);
+    assert.equal(root.anchor.x, 0.5);
+    assert.equal(root.anchor.y, 1);
+    assert.equal(root.x, 40, "base fields still apply after type-specific assign");
+});
+
+test("apply: patches animatedSprite textures and playback fields", () => {
+    const oldTexture = Texture.EMPTY;
+    const newFrames = [Texture.WHITE, Texture.EMPTY];
+    const textureCalls: string[] = [];
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "hero",
+            type: "animatedSprite",
+            textures: ["oldHero"],
+            autoUpdate: false,
+            playing: true,
+        },
+    }, { resolve: { texture: () => oldTexture } });
+
+    assert.ok(root instanceof AnimatedSprite);
+    assert.equal(root.playing, true);
+
+    const count = apply({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "hero",
+            type: "animatedSprite",
+            textures: ["newHero0", "newHero1"],
+            animationSpeed: 0.5,
+            loop: false,
+            autoUpdate: false,
+            updateAnchor: true,
+            playing: false,
+            tint: "#ff00ff",
+            anchorX: 0.25,
+            anchorY: 0.75,
+            x: 9,
+        },
+    }, root, {
+        resolve: {
+            texture: (id) => {
+                textureCalls.push(id);
+                return newFrames[textureCalls.length - 1] ?? Texture.EMPTY;
+            },
+        },
+    });
+
+    assert.equal(count, 1);
+    assert.deepEqual(textureCalls, ["newHero0", "newHero1"]);
+    assert.equal(root.totalFrames, 2);
+    assert.equal(root.animationSpeed, 0.5);
+    assert.equal(root.loop, false);
+    assert.equal(root.autoUpdate, false);
+    assert.equal(root.updateAnchor, true);
+    assert.equal(root.playing, false);
+    assert.equal(root.tint, 0xff00ff);
+    assert.equal(root.anchor.x, 0.25);
+    assert.equal(root.anchor.y, 0.75);
+    assert.equal(root.x, 9);
+});
+
+test("apply: patches bitmapText text, style, maxWidth, and anchor", () => {
+    installTextCanvasShim();
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "score",
+            type: "bitmapText",
+            text: "Old",
+            style: "oldStyle",
+        },
+    }, {
+        resolve: {
+            texture: () => Texture.EMPTY,
+            style: () => ({ fontFamily: "Arial", fontSize: 16, fill: "#ffffff" }),
+        },
+    });
+
+    assert.ok(root instanceof BitmapText);
+
+    const count = apply({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "score",
+            type: "bitmapText",
+            text: "Score: {score}",
+            style: "newStyle",
+            maxWidth: 180,
+            anchorX: 1,
+            anchorY: 0.5,
+            y: 12,
+        },
+    }, root, {
+        resolve: {
+            binding: (path) => path === "score" ? "900" : `[${path}]`,
+            style: (id) => id === "newStyle"
+                ? { fontFamily: "Arial", fontSize: 24, fill: "#00ffff" }
+                : undefined,
+        },
+    });
+
+    assert.equal(count, 1);
+    assert.equal(root.text, "Score: 900");
+    assert.equal(root.style.fontSize, 24);
+    assert.equal(root.style.fill, "#00ffff");
+    assert.equal(root.style.wordWrap, true);
+    assert.equal(root.style.wordWrapWidth, 180);
+    assert.equal(root.anchor.x, 1);
+    assert.equal(root.anchor.y, 0.5);
+    assert.equal(root.y, 12);
 });
 
 test("apply: absent root label does not reset existing label", () => {
