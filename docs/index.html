@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>pxd — minimal PXD library for Pixi.js</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+    <script type="importmap">
+    {
+        "imports": {
+            "pixi.js": "https://esm.sh/pixi.js@8.7",
+            "pxd": "../dist/src/index.js",
+            "@example/browser-minimal": "../dist/examples/browser-minimal/preview.js",
+            "@example/custom-node-type": "../dist/examples/custom-node-type/preview.js",
+            "@example/custom-composable-node": "../dist/examples/custom-composable-node/preview.js",
+            "@example/hot-reload-apply": "../dist/examples/hot-reload-apply/preview.js",
+            "@example/slots": "../dist/examples/slots/preview.js",
+            "@example/prefabs": "../dist/examples/prefabs/preview.js",
+            "@example/decisions-bindings": "../dist/examples/decisions-bindings/preview.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <header class="site">
+        <div class="row">
+            <div class="brand">pxd <small>minimal PXD library for Pixi.js</small></div>
+            <nav>
+                <a href="#overview">Docs</a>
+                <a href="#examples">Examples</a>
+                <a href="#api">API</a>
+                <a href="https://github.com/demansn/pxd">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <h3>Guide</h3>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#mental-model">Mental model</a></li>
+                <li><a href="#quickstart">Quickstart</a></li>
+            </ul>
+            <h3>Reference</h3>
+            <ul>
+                <li><a href="#api">Public API</a></li>
+                <li><a href="#reserved-base-fields">Reserved base fields</a></li>
+                <li><a href="#apply-patch-semantics">apply() patch semantics</a></li>
+                <li><a href="#custom-node-types">Custom node types</a></li>
+                <li><a href="#decisions-and-bindings">Decisions &amp; bindings</a></li>
+                <li><a href="#prefabs">Prefabs</a></li>
+                <li><a href="#slots">Slots</a></li>
+                <li><a href="#cli">CLI</a></li>
+                <li><a href="#not-included">What's not included</a></li>
+            </ul>
+            <h3>Examples</h3>
+            <ul>
+                <li><a href="#examples">All examples</a></li>
+                <li><a href="#example-browser-minimal">Minimal browser</a></li>
+                <li><a href="#example-custom-node-type">Custom node type</a></li>
+                <li><a href="#example-custom-composable-node">Custom composable</a></li>
+                <li><a href="#example-hot-reload-apply">Hot reload</a></li>
+                <li><a href="#example-slots">Slots</a></li>
+                <li><a href="#example-prefabs">Prefabs</a></li>
+                <li><a href="#example-decisions-bindings">Decisions &amp; bindings</a></li>
+            </ul>
+        </aside>
+
+        <main>
+            <section id="overview"><h2>Overview</h2><p>TODO — authored in Task 4.</p></section>
+            <section id="mental-model"><h2>Mental model</h2><p>TODO — Task 4.</p></section>
+            <section id="quickstart"><h2>Quickstart</h2><p>TODO — Task 4.</p></section>
+            <section id="api"><h2>Public API</h2><p>TODO — Task 5.</p></section>
+            <section id="reserved-base-fields"><h2>Reserved base fields</h2><p>TODO — Task 5.</p></section>
+            <section id="apply-patch-semantics"><h2>apply() patch semantics</h2><p>TODO — Task 5.</p></section>
+            <section id="custom-node-types"><h2>Custom node types</h2><p>TODO — Task 6.</p></section>
+            <section id="decisions-and-bindings"><h2>Decisions and bindings</h2><p>TODO — Task 7.</p></section>
+            <section id="prefabs"><h2>Prefabs</h2><p>TODO — Task 7.</p></section>
+            <section id="slots"><h2>Slots</h2><p>TODO — Task 7.</p></section>
+            <section id="cli"><h2>CLI</h2><p>TODO — Task 8.</p></section>
+            <section id="not-included"><h2>What's not included</h2><p>TODO — Task 8.</p></section>
+
+            <section id="examples">
+                <h2>Examples</h2>
+                <p class="lede">Each example is a real Pixi <code>Application</code> wired to the same library APIs the rest of this page documents.</p>
+
+                <h3 id="example-browser-minimal">Minimal browser</h3>
+                <div class="demo">
+                    <div class="demo-head"><span class="name">browser-minimal</span><span class="links"><a href="https://github.com/demansn/pxd/tree/main/examples/browser-minimal">source</a></span></div>
+                    <div class="stage" data-demo="browser-minimal"></div>
+                </div>
+
+                <h3 id="example-custom-node-type">Custom node type</h3>
+                <div class="demo">
+                    <div class="demo-head"><span class="name">custom-node-type</span><span class="links"><a href="https://github.com/demansn/pxd/tree/main/examples/custom-node-type">source</a></span></div>
+                    <div class="stage" data-demo="custom-node-type"></div>
+                </div>
+
+                <h3 id="example-custom-composable-node">Custom composable</h3>
+                <div class="demo">
+                    <div class="demo-head"><span class="name">custom-composable-node</span><span class="links"><a href="https://github.com/demansn/pxd/tree/main/examples/custom-composable-node">source</a></span></div>
+                    <div class="stage" data-demo="custom-composable-node"></div>
+                </div>
+
+                <h3 id="example-hot-reload-apply">Hot reload with apply()</h3>
+                <div class="demo">
+                    <div class="demo-head"><span class="name">hot-reload-apply</span><span class="links"><a href="https://github.com/demansn/pxd/tree/main/examples/hot-reload-apply">source</a></span></div>
+                    <div class="stage" data-demo="hot-reload-apply"></div>
+                </div>
+
+                <h3 id="example-slots">Slots</h3>
+                <div class="demo">
+                    <div class="demo-head"><span class="name">slots</span><span class="links"><a href="https://github.com/demansn/pxd/tree/main/examples/slots">source</a></span></div>
+                    <div class="stage" data-demo="slots"></div>
+                </div>
+
+                <h3 id="example-prefabs">Prefabs</h3>
+                <div class="demo">
+                    <div class="demo-head"><span class="name">prefabs</span><span class="links"><a href="https://github.com/demansn/pxd/tree/main/examples/prefabs">source</a></span></div>
+                    <div class="stage" data-demo="prefabs"></div>
+                </div>
+
+                <h3 id="example-decisions-bindings">Decisions and bindings</h3>
+                <div class="demo">
+                    <div class="demo-head"><span class="name">decisions-bindings</span><span class="links"><a href="https://github.com/demansn/pxd/tree/main/examples/decisions-bindings">source</a></span></div>
+                    <div class="stage" data-demo="decisions-bindings"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="./site.js" defer></script>
+    <script type="module">
+        import { mountDemo as m1 } from "@example/browser-minimal";
+        import { mountDemo as m2 } from "@example/custom-node-type";
+        import { mountDemo as m3 } from "@example/custom-composable-node";
+        import { mountDemo as m4 } from "@example/hot-reload-apply";
+        import { mountDemo as m5 } from "@example/slots";
+        import { mountDemo as m6 } from "@example/prefabs";
+        import { mountDemo as m7 } from "@example/decisions-bindings";
+
+        const demos = new Map([
+            ["browser-minimal", m1],
+            ["custom-node-type", m2],
+            ["custom-composable-node", m3],
+            ["hot-reload-apply", m4],
+            ["slots", m5],
+            ["prefabs", m6],
+            ["decisions-bindings", m7],
+        ]);
+
+        const io = new IntersectionObserver(async (entries) => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                const el = entry.target;
+                const name = el.dataset.demo;
+                io.unobserve(el);
+                const mount = demos.get(name);
+                if (mount) {
+                    try { await mount(el); }
+                    catch (err) { el.textContent = String(err); el.style.color = "#f87171"; }
+                }
+            }
+        }, { rootMargin: "200px" });
+
+        for (const el of document.querySelectorAll("[data-demo]")) io.observe(el);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
