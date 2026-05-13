@@ -7,7 +7,7 @@
 - [ ] Держать публичный API маленьким: `validate`, `build`, `apply`, `find/findAll/requirePath`, `getSlot/mountSlot`.
 - [ ] Всё продвинутое включать через options, а не через усложнение базового сценария.
 - [ ] Главный механизм расширения — `nodeTypes`, не extensions.
-- [ ] Intrinsic types — строгие и хорошо описанные; custom types — свободные и responsibility пользователя.
+- [x] Intrinsic types — строгие и хорошо описанные; custom types — свободные и responsibility пользователя.
 - [x] `apply()` по умолчанию и пока фактически только **patch-only**: отсутствующие поля не сбрасываются.
 - [x] `mode: "full"` / reconcile оставить как будущий дизайн, не реализовывать частично.
 - [ ] Не вводить type packs / custom schemas для сторонних типов, пока нет сильной необходимости.
@@ -59,19 +59,19 @@
 
 ## 4. Intrinsic types: стабильная Pixi-база
 
-- [ ] Сначала довести текущие built-ins до точной и протестированной семантики:
-  - [ ] `container`: base/pivot fields.
-  - [ ] `sprite`: `texture`, `frame`, `tint`, `width`, `height`, `anchor`.
-  - [ ] `text`: `style`, `maxWidth`, решить судьбу `fit` — реализовать или убрать.
-  - [ ] `graphics`: все shape cases, ошибки неполных shape fields.
-  - [ ] `slot`: реализовать/описать `width` и `height`.
-- [ ] Решить судьбу `spine`: скорее убрать из default intrinsic support и оставить через custom `nodeTypes`.
+- [x] Сначала довести текущие built-ins до точной и протестированной семантики:
+  - [x] `container`: base/pivot fields.
+  - [x] `sprite`: `texture`, `tint`, `width`, `height`, `anchor`; `frame` убран, subtexture кодируется в `texture` id.
+  - [x] `text`: `style` string id, `maxWidth` через Pixi word wrap; `fit` убран.
+  - [x] `graphics`: все shape cases, ошибки неполных shape fields и shape-specific no-op полей.
+  - [x] `slot`: реализованы/описаны `width` и `height` через стабильный empty-slot bounds.
+- [x] Решить судьбу `spine`: убран из default intrinsic support и оставлен через custom `nodeTypes`.
 - [ ] Затем расширить PXD v1 intrinsic набор практичными Pixi v8 типами:
   - [ ] `nineSliceSprite`.
   - [ ] `tilingSprite`.
   - [ ] `animatedSprite`.
   - [ ] `bitmapText`.
-- [ ] Не добавлять engine/game-specific типы в базу: buttons, reels, layout controllers, Spine/game objects — через custom `nodeTypes`.
+- [x] Не добавлять engine/game-specific типы в базу: buttons, reels, layout controllers, Spine/game objects — через custom `nodeTypes`.
 
 ## 5. Descriptor как source of truth для intrinsic structure
 
@@ -89,7 +89,7 @@
 
 ## 6. Validation/schema policy
 
-- [ ] Built-in intrinsic nodes strict: unknown fields запрещены.
+- [x] Built-in intrinsic nodes strict: unknown fields запрещены.
 - [ ] Custom nodes open: дополнительные top-level поля разрешены.
 - [ ] Custom top-level scalar fields могут быть decision maps и автоматически resolve-ятся.
 - [ ] Structural fields не decidable: `id`, `type`, `mask`, `children`, `extensions`, `points`.
