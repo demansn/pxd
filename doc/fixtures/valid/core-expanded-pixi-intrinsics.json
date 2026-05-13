@@ -1,0 +1,45 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "level": "core",
+  "root": {
+    "id": "root",
+    "type": "container",
+    "children": [
+      {
+        "id": "bg",
+        "type": "tilingSprite",
+        "texture": "patterns/checker",
+        "width": 800,
+        "height": 600,
+        "tilePositionX": 0,
+        "tilePositionY": 16,
+        "tileScaleX": 2,
+        "tileScaleY": 2,
+        "tileRotation": 0,
+        "applyAnchorToTexture": true
+      },
+      {
+        "id": "hero",
+        "type": "animatedSprite",
+        "textures": ["hero/walk_0", "hero/walk_1"],
+        "animationSpeed": 0.25,
+        "loop": true,
+        "autoUpdate": false,
+        "updateAnchor": false,
+        "playing": false,
+        "anchorX": 0.5,
+        "anchorY": 1
+      },
+      {
+        "id": "score",
+        "type": "bitmapText",
+        "text": "Score: {score}",
+        "style": "score",
+        "maxWidth": 240,
+        "anchorX": 1,
+        "anchorY": 0
+      }
+    ]
+  }
+}

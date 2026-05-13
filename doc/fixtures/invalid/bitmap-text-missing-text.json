@@ -1,0 +1,5 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": { "id": "score", "type": "bitmapText", "style": "score" }
+}

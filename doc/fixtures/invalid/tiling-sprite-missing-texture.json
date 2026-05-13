@@ -1,0 +1,5 @@
+{
+  "format": "pxd",
+  "version": 1,
+  "root": { "id": "bg", "type": "tilingSprite", "width": 800, "height": 600 }
+}
