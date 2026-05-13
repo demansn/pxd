@@ -97,6 +97,41 @@ export interface NineSliceSpriteNode extends BaseNode {
     children?: never;
 }
 
+export interface TilingSpriteNode extends BaseNode {
+    type: "tilingSprite";
+    texture: Decidable<string>;
+    width?: Decidable<number>;
+    height?: Decidable<number>;
+    tilePositionX?: Decidable<number>;
+    tilePositionY?: Decidable<number>;
+    tileScaleX?: Decidable<number>;
+    tileScaleY?: Decidable<number>;
+    /** Tiling texture rotation in degrees; converted to Pixi radians by the reader. */
+    tileRotation?: Decidable<number>;
+    applyAnchorToTexture?: Decidable<boolean>;
+    anchorX?: Decidable<number>;
+    anchorY?: Decidable<number>;
+    children?: never;
+}
+
+export interface AnimatedSpriteNode extends BaseNode {
+    type: "animatedSprite";
+    /** Static frame texture ids. Bindings resolve per string; decision maps are not supported inside arrays. */
+    textures: string[];
+    tint?: Decidable<string> | Decidable<number>;
+    width?: Decidable<number>;
+    height?: Decidable<number>;
+    anchorX?: Decidable<number>;
+    anchorY?: Decidable<number>;
+    animationSpeed?: Decidable<number>;
+    loop?: Decidable<boolean>;
+    autoUpdate?: Decidable<boolean>;
+    updateAnchor?: Decidable<boolean>;
+    /** Patch-friendly playback control: true => play(), false => stop(), absent => leave as-is. */
+    playing?: Decidable<boolean>;
+    children?: never;
+}
+
 export interface TextNode extends BaseNode {
     type: "text";
     text: Decidable<string>;
@@ -108,6 +143,16 @@ export interface TextNode extends BaseNode {
 }
 
 export type GraphicsShape = "rect" | "roundRect" | "circle" | "ellipse" | "polygon";
+
+export interface BitmapTextNode extends BaseNode {
+    type: "bitmapText";
+    text: Decidable<string>;
+    style?: Decidable<string>;
+    maxWidth?: Decidable<number>;
+    anchorX?: Decidable<number>;
+    anchorY?: Decidable<number>;
+    children?: never;
+}
 
 export interface GraphicsNode extends BaseNode {
     type: "graphics";
@@ -145,7 +190,10 @@ export type IntrinsicNode =
     | ContainerNode
     | SpriteNode
     | NineSliceSpriteNode
+    | TilingSpriteNode
+    | AnimatedSpriteNode
     | TextNode
+    | BitmapTextNode
     | GraphicsNode
     | SlotNode;
 
