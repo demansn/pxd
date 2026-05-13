@@ -1,10 +1,14 @@
 /**
- * `apply(doc, root, options)` — apply a PXD doc as a stylesheet to an existing tree.
+ * `apply(doc, root, options)` — patch a PXD doc onto an existing tree.
  *
- * Matches by label-path (immediate child whose label === pxdChild.label ?? id).
- * Missing nodes silently skip the subtree (optional `onMissing` callback).
- * Type-mismatch is also silent — base fields still apply, type-specific fields
- * are skipped by the per-type `assign`.
+ * Patch semantics:
+ * - Present fields mutate the matched live node.
+ * - Absent fields do not reset existing live values.
+ * - Children are matched by label-path (immediate child whose label === pxdChild.label ?? id).
+ * - Missing doc children do not delete live children.
+ * - Missing live children call optional `onMissing` and skip that subtree.
+ * - Type-mismatch is silent — base patch fields still apply, type-specific fields
+ *   are skipped by the per-type `assign`.
  */
 
 import type { Container } from "pixi.js";

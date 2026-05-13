@@ -77,9 +77,10 @@ apply(updatedDoc, root, {
 ## Design contract
 
 - **`Container.label = node.label ?? node.id`** — load-bearing for find/apply. PXD spec §3.2 makes label the semantic name; if the producer didn't supply one, `id` is used. Path queries always compare against `label`.
-- **Apply matches by label-path with immediate-child lookup.** For each PXD node we look for a child of the current Pixi parent with the same `label` (one hop, not deep search). Missing nodes → `onMissing` callback, then subtree skipped. Structure mismatch never throws.
+- **Apply is patch-only.** Present fields update matched live nodes; absent optional fields do not reset old values. A child missing from the apply doc is not removed from the live tree. An absent `mask` field does not clear an existing mask. There is no `mode: "full"` or reconcile mode yet.
+- **Apply matches by label-path with immediate-child lookup.** For each PXD child node we look for an immediate child of the current Pixi parent with `label === (node.label ?? node.id)` (one hop, not deep search). Missing live nodes → `onMissing` callback, then subtree skipped. Structure mismatch never throws. Because matching itself uses label, renaming a descendant `label` in an apply doc is treated as a missing child rather than an in-place rename; use rebuild/future reconcile for structural renames.
 - **Type-mismatch is silent.** If PXD says `text` but the live target is `Sprite`, type-specific fields (`text`, `style`) are skipped. Base fields (`x`, `y`, `alpha`, …) still flow through.
-- **Mask in apply** rebinds to the existing tree by `id` (validation rule 6 is relaxed for apply because mask source may live outside the apply doc).
+- **Mask in apply** rebinds to the existing tree by `id` when `mask` is present (validation rule 6 is relaxed for apply because the mask source may live outside the apply doc). If `mask` is absent or cannot be found in the live id map, the current mask is left unchanged.
 - **Slots** are Pixi `Container`s tagged with `Symbol.for("pxd.slot")` — `getSlot` finds them regardless of label. Independent from label collisions and cross-module-safe.
 
 ## Extension points
