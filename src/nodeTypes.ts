@@ -8,7 +8,7 @@
  * mutating `scale` on Sprite).
  */
 
-import { Container, Graphics, Sprite, Text } from "pixi.js";
+import { Container, Graphics, NineSliceSprite, Sprite, Text, Texture } from "pixi.js";
 import type { AssignContext, NodeType } from "./context.js";
 import type { ResolvedNode } from "./types.js";
 
@@ -35,7 +35,7 @@ export class SlotContainer extends Container {
 }
 
 /** Apply `anchorX` / `anchorY` from a node to any object that has a Pixi `anchor`. */
-export function setAnchorFromNode(target: Sprite | Text, node: ResolvedNode): void {
+export function setAnchorFromNode(target: Sprite | Text | NineSliceSprite, node: ResolvedNode): void {
     if (node.anchorX === undefined && node.anchorY === undefined) return;
     target.anchor.set(
         (node.anchorX as number | undefined) ?? 0,
@@ -77,6 +77,28 @@ function applyTextMaxWidth(node: ResolvedNode, target: Text): void {
     target.style.wordWrap = true;
     target.style.wordWrapWidth = node.maxWidth;
 }
+
+function assignNineSliceBorderFields(node: ResolvedNode, target: NineSliceSprite): void {
+    if (typeof node.leftWidth === "number") target.leftWidth = node.leftWidth;
+    if (typeof node.topHeight === "number") target.topHeight = node.topHeight;
+    if (typeof node.rightWidth === "number") target.rightWidth = node.rightWidth;
+    if (typeof node.bottomHeight === "number") target.bottomHeight = node.bottomHeight;
+}
+
+const nineSliceSprite: NodeType = {
+    create: () => new NineSliceSprite(Texture.EMPTY),
+    // Order matters: texture/borders first, then explicit display size.
+    assign: (node, target, ctx) => {
+        if (!(target instanceof NineSliceSprite)) return;
+        if (typeof node.texture === "string" && ctx.resolve.texture) {
+            target.texture = ctx.resolve.texture(ctx.readString(node.texture));
+        }
+        assignNineSliceBorderFields(node, target);
+        if (typeof node.width === "number") target.width = node.width;
+        if (typeof node.height === "number") target.height = node.height;
+        setAnchorFromNode(target, node);
+    },
+};
 
 const text: NodeType = {
     create: () => new Text(),
@@ -156,6 +178,7 @@ const slot: NodeType = {
 export const defaultNodeTypes: ReadonlyMap<string, NodeType> = new Map<string, NodeType>([
     ["container", container],
     ["sprite", sprite],
+    ["nineSliceSprite", nineSliceSprite],
     ["text", text],
     ["graphics", graphics],
     ["slot", slot],

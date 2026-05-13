@@ -83,6 +83,20 @@ export interface SpriteNode extends BaseNode {
     children?: never;
 }
 
+export interface NineSliceSpriteNode extends BaseNode {
+    type: "nineSliceSprite";
+    texture: Decidable<string>;
+    width?: Decidable<number>;
+    height?: Decidable<number>;
+    leftWidth?: Decidable<number>;
+    topHeight?: Decidable<number>;
+    rightWidth?: Decidable<number>;
+    bottomHeight?: Decidable<number>;
+    anchorX?: Decidable<number>;
+    anchorY?: Decidable<number>;
+    children?: never;
+}
+
 export interface TextNode extends BaseNode {
     type: "text";
     text: Decidable<string>;
@@ -130,6 +144,7 @@ export interface CustomNode extends BaseNode {
 export type IntrinsicNode =
     | ContainerNode
     | SpriteNode
+    | NineSliceSpriteNode
     | TextNode
     | GraphicsNode
     | SlotNode;

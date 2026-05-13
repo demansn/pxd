@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Container, Sprite, Text, Texture, type Graphics } from "pixi.js";
+import { Container, NineSliceSprite, Sprite, Text, Texture, type Graphics } from "pixi.js";
 
 import { build } from "../src/build.js";
 import type { NodeType, Resolvers } from "../src/context.js";
@@ -142,6 +142,76 @@ test("intrinsic sprite: explicit scale base fields override width and height sid
     assert.ok(root instanceof Sprite);
     assert.equal(root.scale.x, 2);
     assert.equal(root.scale.y, 3);
+});
+
+test("intrinsic nineSliceSprite: applies texture, borders, size, and anchor", () => {
+    const texture = Texture.WHITE;
+    const calls: string[] = [];
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "panel",
+            type: "nineSliceSprite",
+            texture: "ui/panel",
+            width: 320,
+            height: 120,
+            leftWidth: 12,
+            topHeight: 14,
+            rightWidth: 16,
+            bottomHeight: 18,
+            anchorX: 0.5,
+            anchorY: 1,
+        },
+    }, {
+        resolve: {
+            texture: (id) => {
+                calls.push(id);
+                return texture;
+            },
+        },
+    });
+
+    assert.ok(root instanceof NineSliceSprite);
+    assert.deepEqual(calls, ["ui/panel"]);
+    assert.equal(root.texture, texture);
+    assert.equal(root.width, 320);
+    assert.equal(root.height, 120);
+    assert.equal(root.leftWidth, 12);
+    assert.equal(root.topHeight, 14);
+    assert.equal(root.rightWidth, 16);
+    assert.equal(root.bottomHeight, 18);
+    assert.equal(root.anchor.x, 0.5);
+    assert.equal(root.anchor.y, 1);
+});
+
+test("intrinsic nineSliceSprite: resolves decisions and bindings before texture resolver", () => {
+    const calls: string[] = [];
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "panel",
+            type: "nineSliceSprite",
+            texture: { _: "panel_{theme}", dark: "panel_dark_{theme}" },
+            width: { _: 200, mobile: 160 },
+        },
+    }, {
+        activeTags: ["dark", "mobile"],
+        resolve: {
+            texture: (id) => {
+                calls.push(id);
+                return Texture.WHITE;
+            },
+            binding: (path) => path === "theme" ? "blue" : `[${path}]`,
+        },
+    });
+
+    assert.ok(root instanceof NineSliceSprite);
+    assert.deepEqual(calls, ["panel_dark_blue"]);
+    assert.equal(root.width, 160);
 });
 
 test("intrinsic text: applies text, resolved style, maxWidth wrapping, and anchor", () => {

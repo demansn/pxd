@@ -17,9 +17,9 @@ export class ValidationError extends Error {
 }
 
 /** Intrinsic type names (§4). */
-const INTRINSIC = new Set(["container", "sprite", "text", "graphics", "slot"]);
+const INTRINSIC = new Set(["container", "sprite", "nineSliceSprite", "text", "graphics", "slot"]);
 /** Intrinsic types that MUST NOT have children (§10 rule 8). */
-const NON_COMPOSABLE = new Set(["sprite", "text", "graphics", "slot"]);
+const NON_COMPOSABLE = new Set(["sprite", "nineSliceSprite", "text", "graphics", "slot"]);
 
 /**
  * Extension identifiers this reader implementation supports.
@@ -323,6 +323,18 @@ const COMMON_NODE_FIELDS = [
 const intrinsicAllowedFields: Record<string, ReadonlySet<string>> = {
     container: new Set([...COMMON_NODE_FIELDS, "pivotX", "pivotY", "children"]),
     sprite: new Set([...COMMON_NODE_FIELDS, "texture", "tint", "width", "height", "anchorX", "anchorY"]),
+    nineSliceSprite: new Set([
+        ...COMMON_NODE_FIELDS,
+        "texture",
+        "width",
+        "height",
+        "leftWidth",
+        "topHeight",
+        "rightWidth",
+        "bottomHeight",
+        "anchorX",
+        "anchorY",
+    ]),
     text: new Set([...COMMON_NODE_FIELDS, "text", "style", "maxWidth", "anchorX", "anchorY"]),
     graphics: new Set([...COMMON_NODE_FIELDS, "shape", "width", "height", "radius", "points", "fill", "stroke", "strokeWidth"]),
     slot: new Set([...COMMON_NODE_FIELDS, "slot", "width", "height"]),
@@ -354,11 +366,22 @@ interface FieldSpec {
 
 const intrinsicSpecs: Record<string, FieldSpec[]> = {
     sprite: [{ name: "texture", check: isNonEmptyStr, label: "string" }],
+    nineSliceSprite: [{ name: "texture", check: isNonEmptyStr, label: "string" }],
     text: [{ name: "text", check: isString, label: "string" }],
     slot: [{ name: "slot", check: isNonEmptyStr, label: "string" }],
 };
 
 const optionalIntrinsicSpecs: Record<string, FieldSpec[]> = {
+    nineSliceSprite: [
+        { name: "width", check: isNumber, label: "number" },
+        { name: "height", check: isNumber, label: "number" },
+        { name: "leftWidth", check: isNumber, label: "number" },
+        { name: "topHeight", check: isNumber, label: "number" },
+        { name: "rightWidth", check: isNumber, label: "number" },
+        { name: "bottomHeight", check: isNumber, label: "number" },
+        { name: "anchorX", check: isNumber, label: "number" },
+        { name: "anchorY", check: isNumber, label: "number" },
+    ],
     text: [{ name: "style", check: isString, label: "string" }],
     graphics: [
         { name: "fill", check: isString, label: "string" },

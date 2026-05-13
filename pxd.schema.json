@@ -89,7 +89,7 @@
       ]
     },
     "intrinsicTypeName": {
-      "enum": ["container", "sprite", "text", "graphics", "slot"]
+      "enum": ["container", "sprite", "nineSliceSprite", "text", "graphics", "slot"]
     },
     "baseNode": {
       "type": "object",
@@ -131,6 +131,23 @@
         "height":  { "$ref": "#/$defs/decidableNumber" },
         "anchorX": { "$ref": "#/$defs/decidableNumber" },
         "anchorY": { "$ref": "#/$defs/decidableNumber" }
+      },
+      "required": ["type", "texture"],
+      "unevaluatedProperties": false
+    },
+    "nineSliceSpriteNode": {
+      "allOf": [{ "$ref": "#/$defs/baseNode" }],
+      "properties": {
+        "type":         { "const": "nineSliceSprite" },
+        "texture":      { "$ref": "#/$defs/decidableString" },
+        "width":        { "$ref": "#/$defs/decidableNumber" },
+        "height":       { "$ref": "#/$defs/decidableNumber" },
+        "leftWidth":    { "$ref": "#/$defs/decidableNumber" },
+        "topHeight":    { "$ref": "#/$defs/decidableNumber" },
+        "rightWidth":   { "$ref": "#/$defs/decidableNumber" },
+        "bottomHeight": { "$ref": "#/$defs/decidableNumber" },
+        "anchorX":      { "$ref": "#/$defs/decidableNumber" },
+        "anchorY":      { "$ref": "#/$defs/decidableNumber" }
       },
       "required": ["type", "texture"],
       "unevaluatedProperties": false
@@ -231,6 +248,7 @@
       "oneOf": [
         { "$ref": "#/$defs/containerNode" },
         { "$ref": "#/$defs/spriteNode" },
+        { "$ref": "#/$defs/nineSliceSpriteNode" },
         { "$ref": "#/$defs/textNode" },
         { "$ref": "#/$defs/graphicsNode" },
         { "$ref": "#/$defs/slotNode" },

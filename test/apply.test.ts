@@ -8,7 +8,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Container } from "pixi.js";
+import { Container, NineSliceSprite, Texture } from "pixi.js";
 
 import { apply } from "../src/apply.js";
 import { build } from "../src/build.js";
@@ -229,6 +229,66 @@ test("apply: missing PXD node calls onMissing and continues", () => {
     assert.equal(missed[0].nodeId, "ghost");
     assert.equal(missed[0].path, "root.ghost");
     assert.equal(find(root, "a")?.x, 10);
+});
+
+test("apply: patches nineSliceSprite type-specific fields", () => {
+    const oldTexture = Texture.EMPTY;
+    const newTexture = Texture.WHITE;
+    const textureCalls: string[] = [];
+
+    const root = build({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "panel",
+            type: "nineSliceSprite",
+            texture: "oldPanel",
+            width: 100,
+            height: 50,
+            leftWidth: 5,
+            anchorX: 0,
+            anchorY: 0,
+        },
+    }, {
+        resolve: { texture: () => oldTexture },
+    });
+
+    assert.ok(root instanceof NineSliceSprite);
+
+    const count = apply({
+        format: "pxd" as const,
+        version: 1 as const,
+        root: {
+            id: "panel",
+            type: "nineSliceSprite",
+            texture: "newPanel",
+            width: 220,
+            height: 90,
+            leftWidth: 11,
+            topHeight: 12,
+            anchorX: 0.5,
+            anchorY: 1,
+            x: 30,
+        },
+    }, root, {
+        resolve: {
+            texture: (id) => {
+                textureCalls.push(id);
+                return newTexture;
+            },
+        },
+    });
+
+    assert.equal(count, 1);
+    assert.deepEqual(textureCalls, ["newPanel"]);
+    assert.equal(root.texture, newTexture);
+    assert.equal(root.width, 220);
+    assert.equal(root.height, 90);
+    assert.equal(root.leftWidth, 11);
+    assert.equal(root.topHeight, 12);
+    assert.equal(root.anchor.x, 0.5);
+    assert.equal(root.anchor.y, 1);
+    assert.equal(root.x, 30, "base fields still apply after type-specific assign");
 });
 
 test("apply: absent root label does not reset existing label", () => {
