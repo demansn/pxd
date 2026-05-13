@@ -1,10 +1,13 @@
 # pxd examples
 
-Small, checkable examples for the public `pxd` API.
+Each example is a real Pixi scene rendered live inside the unified [documentation page](../docs/index.html#examples).
 
-## Run checks
+Every folder contains:
 
-From the repository root:
+- `demo.ts` — Node-safe `run...Demo()` used by the test suite (`test/examples.test.ts`).
+- `preview.ts` — browser entry exporting `mountDemo(target)`. Imported by both the docs page and any standalone HTML wrapper.
+
+Run all checks:
 
 ```bash
 npm test
@@ -12,15 +15,12 @@ npm test
 npm run examples:check
 ```
 
-## Examples
-
-- [`browser-minimal`](./browser-minimal/) — minimal Pixi browser bootstrap with `build()`.
-- [`custom-node-type`](./custom-node-type/) — custom `NodeType` with top-level custom fields; no `props`.
-- [`custom-composable-node`](./custom-composable-node/) — custom `Container` that receives document-defined children.
-- [`hot-reload-apply`](./hot-reload-apply/) — patch an existing tree in place with `apply()`.
-- [`slots`](./slots/) — declare a `slot` and mount host-owned content.
-- [`prefabs`](./prefabs/) — declare reusable prefab subtrees in a Library document.
-- [`decisions-bindings`](./decisions-bindings/) — active tags and string bindings.
-
-The Node-safe examples export `run...Demo()` functions and are smoke-tested by `test/examples.test.ts`.
-The browser example exports its document separately so CI can validate it without launching a browser.
+| Folder | Live demo |
+|---|---|
+| `browser-minimal` | [#example-browser-minimal](../docs/index.html#example-browser-minimal) |
+| `custom-node-type` | [#example-custom-node-type](../docs/index.html#example-custom-node-type) |
+| `custom-composable-node` | [#example-custom-composable-node](../docs/index.html#example-custom-composable-node) |
+| `hot-reload-apply` | [#example-hot-reload-apply](../docs/index.html#example-hot-reload-apply) |
+| `slots` | [#example-slots](../docs/index.html#example-slots) |
+| `prefabs` | [#example-prefabs](../docs/index.html#example-prefabs) |
+| `decisions-bindings` | [#example-decisions-bindings](../docs/index.html#example-decisions-bindings) |
