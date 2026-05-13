@@ -12,6 +12,28 @@ import { Container, Graphics, Sprite, Text } from "pixi.js";
 import type { AssignContext, NodeType } from "./context.js";
 import type { ResolvedNode } from "./types.js";
 
+/** Empty mount point whose document area is readable even before content is mounted. */
+export class SlotContainer extends Container {
+    private documentWidth: number | undefined;
+    private documentHeight: number | undefined;
+
+    override get width(): number {
+        return this.documentWidth ?? super.width;
+    }
+
+    override set width(value: number) {
+        this.documentWidth = value;
+    }
+
+    override get height(): number {
+        return this.documentHeight ?? super.height;
+    }
+
+    override set height(value: number) {
+        this.documentHeight = value;
+    }
+}
+
 /** Apply `anchorX` / `anchorY` from a node to any object that has a Pixi `anchor`. */
 export function setAnchorFromNode(target: Sprite | Text, node: ResolvedNode): void {
     if (node.anchorX === undefined && node.anchorY === undefined) return;
@@ -130,7 +152,12 @@ const graphics: NodeType = {
 
 /** Slot — passive named mount point. External content attached via `mountSlot`. */
 const slot: NodeType = {
-    create: () => new Container(),
+    create: () => new SlotContainer(),
+    assign: (node, target) => {
+        if (!(target instanceof SlotContainer)) return;
+        if (typeof node.width === "number") target.width = node.width;
+        if (typeof node.height === "number") target.height = node.height;
+    },
 };
 
 export const defaultNodeTypes: ReadonlyMap<string, NodeType> = new Map<string, NodeType>([
