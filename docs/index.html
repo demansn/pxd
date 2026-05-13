@@ -127,9 +127,82 @@ const title = requirePath&lt;Text&gt;(root, "title");
 title.text = "Hello, player";</code></pre>
                 <p><code>Container.label</code> on every built node equals <code>node.label ?? node.id</code> — that's what <code>find</code> and <code>requirePath</code> match against.</p>
             </section>
-            <section id="api"><h2>Public API</h2><p>TODO — Task 5.</p></section>
-            <section id="reserved-base-fields"><h2>Reserved base fields</h2><p>TODO — Task 5.</p></section>
-            <section id="apply-patch-semantics"><h2>apply() patch semantics</h2><p>TODO — Task 5.</p></section>
+            <section id="api">
+                <h2>Public API</h2>
+                <p>Every export from <code>pxd</code>:</p>
+                <table>
+                    <thead><tr><th>Export</th><th>Kind</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>build(doc, options)</code></td><td>function</td><td>Validate <code>doc</code>, construct a fresh Pixi <code>Container</code> tree.</td></tr>
+                        <tr><td><code>apply(doc, root, options?)</code></td><td>function</td><td>Patch an existing tree in place. Returns the number of updated nodes.</td></tr>
+                        <tr><td><code>find(root, path)</code></td><td>function</td><td>Dot-path lookup by <code>Container.label</code>, returns <code>null</code> on miss.</td></tr>
+                        <tr><td><code>findAll(root, path)</code></td><td>function</td><td>All matches at the final segment.</td></tr>
+                        <tr><td><code>requirePath(root, path)</code></td><td>function</td><td>Like <code>find</code> but throws on miss.</td></tr>
+                        <tr><td><code>getSlot(root, name)</code></td><td>function</td><td>Locate a slot Container by its <code>slot</code> field (uses <code>Symbol.for("pxd.slot")</code>).</td></tr>
+                        <tr><td><code>mountSlot(root, name, child)</code></td><td>function</td><td>Find slot, <code>addChild(child)</code>; throws if slot is missing.</td></tr>
+                        <tr><td><code>validate(doc)</code></td><td>function</td><td>Run semantic validation. <code>build</code> calls this internally.</td></tr>
+                        <tr><td><code>defaultNodeTypes</code></td><td>Map</td><td>Default <code>NodeType</code> registry: <code>container</code>, <code>sprite</code>, <code>nineSliceSprite</code>, <code>tilingSprite</code>, <code>animatedSprite</code>, <code>text</code>, <code>bitmapText</code>, <code>graphics</code>, <code>slot</code>.</td></tr>
+                        <tr><td><code>mergeRegistry(a, b)</code></td><td>function</td><td>Helper for composing <code>nodeTypes</code> maps.</td></tr>
+                        <tr><td><code>NodeType</code>, <code>BuildContext</code>, <code>AssignContext</code>, <code>Resolvers</code>, <code>BuildOptions</code>, <code>ApplyOptions</code>, <code>PxdDocument</code>, …</td><td>types</td><td>TypeScript-only.</td></tr>
+                    </tbody>
+                </table>
+                <p>Build options:</p>
+<pre><code class="language-ts">interface BuildOptions {
+    resolve: {
+        texture(id: string): Texture | undefined;
+        style?(id: string): Partial&lt;TextStyleOptions&gt; | undefined;
+        binding?(path: string): string | number | boolean | undefined;
+    };
+    activeTags?: ReadonlyArray&lt;string&gt;;
+    nodeTypes?: Map&lt;string, NodeType&gt;;  // defaults to defaultNodeTypes
+}
+
+interface ApplyOptions extends Partial&lt;BuildOptions&gt; {
+    onMissing?(path: string, nodeId: string): void;
+}</code></pre>
+            </section>
+
+            <section id="reserved-base-fields">
+                <h2>Reserved base fields</h2>
+                <p>The library reads these fields off every node, intrinsic or custom. Do not reuse the names for custom semantics — they will be overwritten by the base-field pass that runs last in the per-node dispatch order.</p>
+                <table>
+                    <thead><tr><th>Field</th><th>Effect</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>id</code></td><td>Identifier within the document (and within a prefab scope). Used by <code>mask</code> references.</td></tr>
+                        <tr><td><code>type</code></td><td>Intrinsic key or custom <code>NodeType</code> key.</td></tr>
+                        <tr><td><code>label</code></td><td>Optional friendly name. <code>Container.label = node.label ?? node.id</code>. Path lookup uses this.</td></tr>
+                        <tr><td><code>x</code>, <code>y</code></td><td>Position.</td></tr>
+                        <tr><td><code>scaleX</code>, <code>scaleY</code></td><td>Scale on each axis.</td></tr>
+                        <tr><td><code>rotation</code></td><td>Rotation in radians.</td></tr>
+                        <tr><td><code>alpha</code>, <code>visible</code>, <code>zIndex</code></td><td>Pixi base props.</td></tr>
+                        <tr><td><code>pivotX</code>, <code>pivotY</code></td><td>Pivot offset.</td></tr>
+                        <tr><td><code>mask</code></td><td>Id reference to another node used as the live target's Pixi mask.</td></tr>
+                        <tr><td><code>children</code></td><td>Structural. The library builds and walks these; your <code>assign</code> must not touch them.</td></tr>
+                        <tr><td><code>extensions</code></td><td>Reserved. Per-node payloads are silently ignored in this version.</td></tr>
+                    </tbody>
+                </table>
+                <div class="callout warn">
+                    <strong>Custom fields are everything else.</strong> Any other top-level field on a custom or runtime node is your responsibility: the library will run it through decision resolution (§3.6) and binding substitution (§7.2) and pass the resolved value to your <code>NodeType.assign</code>. There is no schema check for custom field shapes — validate them inside your <code>assign</code> or in a host pre-flight step.
+                </div>
+            </section>
+
+            <section id="apply-patch-semantics">
+                <h2>apply() patch semantics</h2>
+                <p><code>apply()</code> is patch-only. It mutates fields that are present in the apply document and leaves everything else untouched. There is no <code>mode: "full"</code> today.</p>
+                <table>
+                    <thead><tr><th>Situation</th><th>Behaviour</th></tr></thead>
+                    <tbody>
+                        <tr><td>Live node has <code>x: 100</code>, apply doc omits <code>x</code></td><td>Live <code>x</code> stays <code>100</code>.</td></tr>
+                        <tr><td>Live node has a mask, apply doc omits <code>mask</code></td><td>Mask stays attached.</td></tr>
+                        <tr><td>Apply doc has a child not in the live tree</td><td><code>onMissing(path, id)</code> fires; subtree is skipped.</td></tr>
+                        <tr><td>Live tree has a child not in the apply doc</td><td>Live child stays attached unmodified.</td></tr>
+                        <tr><td>Type mismatch (doc says <code>text</code>, live target is <code>Sprite</code>)</td><td>Type-specific fields skipped silently. Base fields still flow.</td></tr>
+                        <tr><td>Renamed descendant <code>label</code> in apply doc</td><td>Treated as a missing child (path key changed). Use rebuild for structural renames.</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Matching</strong> uses one-hop child lookup against <code>Container.label</code> at each step — not deep search. <strong>Masks</strong> rebind by <code>id</code> against the live tree's id map; the source may live outside the apply doc.</p>
+                <p>See the <a href="#example-hot-reload-apply">hot-reload example</a> for a live demonstration.</p>
+            </section>
             <section id="custom-node-types"><h2>Custom node types</h2><p>TODO — Task 6.</p></section>
             <section id="decisions-and-bindings"><h2>Decisions and bindings</h2><p>TODO — Task 7.</p></section>
             <section id="prefabs"><h2>Prefabs</h2><p>TODO — Task 7.</p></section>
